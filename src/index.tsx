@@ -1,19 +1,49 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
+// import "primeflex/primeflex.css";
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
+import Login from "./app/login";
+import TraCuu from "./app/tra-cuu/danh-sach";
+import App from "./App";
+import TaiSan from "./app/tra-cuu/tsbd";
+import PhatNguoi from "./app/tra-cuu/phat-nguoi";
+const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
+const router = createBrowserRouter([
+  {
+    path: "/dang-nhap",
+    element: <Login />,
+  },
+  {
+    element: <App />,
+    children: [
+      { path: "/tra-cuu/danh-sach", element: <TraCuu /> },
+      {
+        path: "/tra-cuu/tsbd",
+        element: <TaiSan />,
+      },
+      {
+        path: "/tra-cuu/phat-nguoi",
+        element: <PhatNguoi />,
+      },
+      {
+        path: "*",
+        element: <Navigate to={"/tra-cuu/danh-sach"} replace />,
+      },
+    ],
+  },
+]);
 root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+  <>
+    <div className="app-loading-overlay" id="app-loading-overlay">
+      <div className="loading-spinner"></div>
+    </div>
+    <RouterProvider router={router} />
+  </>
 );
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
