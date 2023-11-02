@@ -11,9 +11,10 @@ type DataProps = {
   data: DataType[];
   columns: ColumnsType<DataType>;
   title: string;
+  className?: string;
 };
 
-const TableComponent: React.FC<DataProps> = ({ data, columns, title }) => {
+const TableComponent: React.FC<DataProps> = ({ data, columns, title, className }) => {
   const [isWideScreen, setIsWideScreen] = useState(false);
   const handleResize = () => {
     setIsWideScreen(window.innerWidth >= 1024);
@@ -22,12 +23,12 @@ const TableComponent: React.FC<DataProps> = ({ data, columns, title }) => {
     window.addEventListener("resize", handleResize);
     handleResize();
     return () => {
-      window.removeEventListener("resize",handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
   return (
-    <div>
+    <div className={className}>
       <p className="font-bold">{title}</p>
       <Table size={`${isWideScreen ? "large" : "small"}`} bordered columns={columns} dataSource={data} />
     </div>

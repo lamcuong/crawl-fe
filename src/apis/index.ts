@@ -1,11 +1,16 @@
+import axios from "axios";
 import _axios from "../axios";
 import {
+  apiCuongCheThue,
+  apiDanhSachCQT,
   apiDanhSachChiNhanh,
   apiDanhSachCongTyLienQuan,
   apiDanhSachNguoiLienQuan,
   apiLogin,
   apiPhatNguoi,
+  apiRuiRoThue,
   apiTaiSan,
+  apiThayDoiDKKD,
 } from "../config";
 import { handleApiRequest } from "./handle";
 
@@ -31,16 +36,32 @@ const getDanhSachCongTyLienQuan = (input: any) => {
 const getTaiSan = (input: any) => {
   return handleApiRequest(() => _axios.post(apiTaiSan, input));
 };
-const getPhatNguoi = (input:any)=>{
-  return handleApiRequest(()=>_axios.post(apiPhatNguoi,input))
-}
+const getPhatNguoi = (input: any) => {
+  return handleApiRequest(() => _axios.post(apiPhatNguoi, input));
+};
+const getCuongCheThue = (input: any) => {
+  return handleApiRequest(() => _axios.post(apiCuongCheThue, input));
+};
+const getRuiRoThue = (input: any) => {
+  return handleApiRequest(() => _axios.post(apiRuiRoThue, input));
+};
+const getDanhSachCQT = (input: any) => {
+  return handleApiRequest(() => axios.post(apiDanhSachCQT));
+};
+const getThayDoiDKKD = (input: any) => {
+  return handleApiRequest(() => _axios.post(apiThayDoiDKKD, input));
+};
 const crawlApi = {
   login,
   getDanhSachChiNhanh,
   getDanhSachNguoiLienQuan,
   getDanhSachCongTyLienQuan,
   getTaiSan,
-  getPhatNguoi
+  getPhatNguoi,
+  getCuongCheThue,
+  getRuiRoThue,
+  getDanhSachCQT,
+  getThayDoiDKKD,
 };
 
 export default crawlApi;

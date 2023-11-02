@@ -63,9 +63,8 @@ code {
 .p-sidebar .p-sidebar-content{
   padding: 0 !important;
 }
-/* .ant-table-cell{
-  font-size: 10px;
-} */
+
+
 @media screen and (max-width: 1024px) {
   :root,.ant-table-cell{
     font-size: 12px;
