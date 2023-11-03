@@ -391,15 +391,15 @@ const TraCuu: React.FC<RpaProps> = () => {
     _dataThongTinThue[0].time = cuongCheThue.data.listTaxEnforceResult[0]?.ngayThongBao || "";
 
     const cqtQuanLy = danhSachCqt.find(
-      (cqt) => cqt.ten.toLowerCase() === cuongCheThue.data.coQuanThueQuanLy.toLowerCase()
+      (cqt) => cqt.ten.toLowerCase() === cuongCheThue.data.coQuanThueQuanLy?.toLowerCase()
     );
     const cqtTinh = danhSachCqt.find((i) => i?.cap_cqt === "C" && i?.ma.startsWith(cqtQuanLy?.ma.substring(0, 3)));
 
     if (cqtTinh) {
       const ruiRoThue = await crawlApi.getRuiRoThue({
         taxCode: valueNNT.taxCode,
-        cqtTinh: cqtTinh.ma,
-        cqtQuanLy: cqtQuanLy.ma,
+        cqtTinh: cqtTinh?.ma,
+        cqtQuanLy: cqtQuanLy?.ma,
       });
       _dataThongTinThue[1].result = ruiRoThue.data.length ? "Có" : "Không";
       _dataThongTinThue[1].time = ruiRoThue.data[0]?.ngayThongBao || "";
