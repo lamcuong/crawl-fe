@@ -45,9 +45,10 @@ const getCuongCheThue = (input: any) => {
 const getRuiRoThue = (input: any) => {
   return handleApiRequest(() => _axios.post(apiRuiRoThue, input));
 };
-const getDanhSachCQT = (input: any) => {
-  return handleApiRequest(() => axios.post(apiDanhSachCQT));
+const getDanhSachCQT = () => {
+  return fetch("/listdmcqt.html").then((r) => r.json().then((data) => data));
 };
+
 const getThayDoiDKKD = (input: any) => {
   return handleApiRequest(() => _axios.post(apiThayDoiDKKD, input));
 };
