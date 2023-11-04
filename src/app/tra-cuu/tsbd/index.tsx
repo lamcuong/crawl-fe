@@ -1,4 +1,5 @@
 //@ts-nocheck
+import "../../layout/tsbd/index.css";
 import React, { useState } from "react";
 // import _axios from "@/api/config";
 // import { DialogDemo } from "../login";
@@ -12,36 +13,36 @@ type TaiSanProps = {};
 
 const TaiSan: React.FC<TaiSanProps> = () => {
   const [files, setFiles] = useState([]);
-  const formatData = (data) => {
-    const startText = "Mô tả tài sản bảo đảm";
-    const endText = "ĐĂNG KÝ GIAO DỊCH BẢO ĐẢM";
-    const emptyText = "Không có bản ghi nào dựa trên tiêu chí tìm kiếm được tìm thấy.";
-    let sampleList = [];
-    let startIndex = -1;
-    let endIndex = -1;
-    if (data.includes(emptyText)) {
-      setData([emptyText]);
-      return;
-    }
-    for (let i = 0; i < data.length; i++) {
-      if (data[i] === startText) {
-        startIndex = i;
-      }
-      if (data[i]?.includes(endText)) {
-        endIndex = i;
-      }
-      if (
-        (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) ||
-        (startIndex !== -1 && i === data.length - 1 && endIndex === -1)
-      ) {
-        const extractedData = data.slice(startIndex + 1, endIndex);
-        sampleList.push(extractedData);
-        startIndex = -1;
-        endIndex = -1;
-      }
-    }
-    setData(sampleList);
-  };
+  // const formatData = (data) => {
+  //   const startText = "Mô tả tài sản bảo đảm";
+  //   const endText = "ĐĂNG KÝ GIAO DỊCH BẢO ĐẢM";
+  //   const emptyText = "Không có bản ghi nào dựa trên tiêu chí tìm kiếm được tìm thấy.";
+  //   let sampleList = [];
+  //   let startIndex = -1;
+  //   let endIndex = -1;
+  //   if (data.includes(emptyText)) {
+  //     setData([emptyText]);
+  //     return;
+  //   }
+  //   for (let i = 0; i < data.length; i++) {
+  //     if (data[i] === startText) {
+  //       startIndex = i;
+  //     }
+  //     if (data[i]?.includes(endText)) {
+  //       endIndex = i;
+  //     }
+  //     if (
+  //       (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) ||
+  //       (startIndex !== -1 && i === data.length - 1 && endIndex === -1)
+  //     ) {
+  //       const extractedData = data.slice(startIndex + 1, endIndex);
+  //       sampleList.push(extractedData);
+  //       startIndex = -1;
+  //       endIndex = -1;
+  //     }
+  //   }
+  //   setData(sampleList);
+  // };
   const initialValue = {
     taxCode: "",
     soKhung: "",
@@ -56,47 +57,48 @@ const TaiSan: React.FC<TaiSanProps> = () => {
     setData([]);
   };
 
-  const renderText = (item) => {
-    let isFile = false;
-    let fileIndex = -1;
-    return item.map((text, index) => {
-      if (item[index - 1]?.startsWith("File đính kèm")) {
-        isFile = true;
-      }
-      if (isFile) {
-        fileIndex += 1;
-      }
-      return (
-        <p className="my-1">
-          {isFile ? (
-            <a className="!underline" href={files[fileIndex] || "#"}>
-              {text}
-            </a>
-          ) : (
-            text
-          )}
-        </p>
-      );
-    });
-  };
+  // const renderText = (item) => {
+  //   let isFile = false;
+  //   let fileIndex = -1;
+  //   return item.map((text, index) => {
+  //     if (item[index - 1]?.startsWith("File đính kèm")) {
+  //       isFile = true;
+  //     }
+  //     if (isFile) {
+  //       fileIndex += 1;
+  //     }
+  //     return (
+  //       <p className="my-1">
+  //         {isFile ? (
+  //           <a className="!underline" href={files[fileIndex] || "#"}>
+  //             {text}
+  //           </a>
+  //         ) : (
+  //           text
+  //         )}
+  //       </p>
+  //     );
+  //   });
+  // };
   const handleSubmit = async () => {
-    LoadingService.start();
+    // LoadingService.start();
     resetData();
     setIsLoading(true);
     try {
       const data = await crawlApi.getTaiSan({ taxCode: value.taxCode || null, soKhung: value.soKhung || null });
-      setFiles(data.data.files);
-      formatData(data.data.data.split("\n"));
+      // setFiles(data.data.files);
+      setData(data.data.html);
+      // formatData(data.data.data.split("\n"));
       setIsLoading(false);
     } catch (error) {
       console.log("err", error);
-      LoadingService.stop();
+      // LoadingService.stop();
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
       }
     }
     setIsLoading(false);
-    LoadingService.stop();
+    // LoadingService.stop();
   };
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -173,11 +175,16 @@ const TaiSan: React.FC<TaiSanProps> = () => {
           />
         </div>
       </div>
-      <Button loading={isLoading} onClick={handleSubmit} className="block !mt-4 !mx-auto" type="button">
-        {isLoading ? "Đang tra cứu" : "Tra cứu"}
-      </Button>
+      <Button
+        loading={isLoading}
+        onClick={handleSubmit}
+        className="block !mt-4 !mx-auto"
+        type="button"
+        label={isLoading ? "Đang tra cứu" : "Tra cứu"}
+      ></Button>
+      <div dangerouslySetInnerHTML={{ __html: data }} />
 
-      {data.length > 0 && (
+      {/* {data.length > 0 && (
         <div>
           {data?.map((item) => {
             return (
@@ -188,7 +195,7 @@ const TaiSan: React.FC<TaiSanProps> = () => {
             );
           })}
         </div>
-      )}
+      )} */}
     </div>
   );
 };

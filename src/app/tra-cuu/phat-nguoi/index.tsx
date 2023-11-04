@@ -44,8 +44,8 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
   // }
   const handleSubmit = async () => {
     // resetData()
-    LoadingService.start()
-    setIsLoading(true)
+    // LoadingService.start()
+    setIsLoading(true);
     try {
       const list = bienSo.replaceAll(/\s+/g, "").split(/[,;]/);
       const danhSachBien = [];
@@ -55,14 +55,18 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
       }
       // setList(danhSachBien);
       renderResult(danhSachBien);
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error) {
-      LoadingService.stop()
+      setIsLoading(false);
+
+      // LoadingService.stop()
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
       }
     }
-    LoadingService.stop()
+    setIsLoading(false);
+
+    // LoadingService.stop()
   };
   const renderResult = (list) => {
     setJsxContent(null);
@@ -116,16 +120,24 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
   return (
     <>
       <DialogDemo isShowDialog={isShowDialog} />
-      <div className="mt-10 min-w-fit w-1/2 mx-auto">
-        <InputText className="w-full" onChange={(e) => setBienSo(e.target.value)} placeholder="Không cần nhập các kí tự đặc biệt như . - " />
+      <div className="mt-10 min-w-fit w-1/2 mx-auto ">
+        <InputText
+          className="w-full"
+          onChange={(e) => setBienSo(e.target.value)}
+          placeholder="Không cần nhập các kí tự đặc biệt như . - "
+        />
         <p className="text-[14px] text-gray-500 my-2">
-          Nhập vào biển số xe hợp lệ, ví dụ: 20C11770. Các biển số xe cách nhau bằng dấu , hoặc <Button className="!text-sm !h-auto !p-2 !align-baseline">Import excel</Button>
+          Nhập vào biển số xe hợp lệ, ví dụ: 20C11770. Các biển số xe cách nhau bằng dấu , hoặc{" "}
+          <Button className="!text-sm !h-auto !p-2 !align-baseline">Import excel</Button>
         </p>
-        <Button loading={isLoading} type="button" onClick={handleSubmit} className="!block !mt-5 !mx-auto ">
-          {isLoading ? "Đang tra cứu": "Tra cứu"}
-        </Button>
       </div>
-     
+      <Button
+        label={isLoading ? "Đang tra cứu" : "Tra cứu"}
+        loading={isLoading}
+        type="button"
+        onClick={handleSubmit}
+        className="!mt-3 w-auto !mx-auto !flex"
+      ></Button>
       {jsxContent}
     </>
 

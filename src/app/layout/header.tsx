@@ -15,20 +15,20 @@ const Header = () => {
           <li>
             <Button
               label="Thông tin doanh nghiệp"
-              className={`${path === "/tra-cuu/danh-sach" && activeClass } !text-left w-full !rounded-none`}
+              className={`${path === "/tra-cuu/danh-sach" && activeClass} !text-left w-full !rounded-none`}
               type="button"
               onClick={() => {
-                setVisible(false)
+                setVisible(false);
                 navigate("/tra-cuu/danh-sach");
               }}
             />
           </li>
           <li>
             <Button
-                className={`${path === "/tra-cuu/tsbd" && activeClass } !text-left w-full !rounded-none`}
+              className={`${path === "/tra-cuu/tsbd" && activeClass} !text-left w-full !rounded-none`}
               type="button"
               onClick={() => {
-                setVisible(false)
+                setVisible(false);
                 navigate("/tra-cuu/tsbd");
               }}
               label="Tài sản bảo đảm"
@@ -36,10 +36,10 @@ const Header = () => {
           </li>
           <li>
             <Button
-               className={`${path === "/tra-cuu/phat-nguoi" && activeClass } !text-left w-full !rounded-none`}
+              className={`${path === "/tra-cuu/phat-nguoi" && activeClass} !text-left w-full !rounded-none`}
               type="button"
               onClick={() => {
-                setVisible(false)
+                setVisible(false);
                 navigate("/tra-cuu/phat-nguoi");
               }}
               label="Phạt nguội"
@@ -49,10 +49,10 @@ const Header = () => {
       </Sidebar>
       <div className="bg-neutral-200 p-5 ">
         <Button className="lg:!hidden block" type="button" onClick={() => setVisible(true)}>
-         <i className="pi pi-bars" ></i>
+          <i className="pi pi-bars"></i>
         </Button>
 
-        <ul className=" gap-10 hidden lg:flex ">
+        <ul className=" gap-10 hidden lg:flex">
           <li>
             <Button
               label="Thông tin doanh nghiệp"

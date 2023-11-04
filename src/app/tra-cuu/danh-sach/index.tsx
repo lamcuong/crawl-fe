@@ -347,7 +347,6 @@ const TraCuu: React.FC<RpaProps> = () => {
   const [danhSachCqt, setDanhSachCqt] = useState([]);
   const [dataThayDoiGiayPhepDKKD, setDataThayDoiGiayPhepDKKD] = useState([]);
   const [dataThongTinThue, setDataThongTinThue] = useState(dataThongTinThueDefault);
-  const [base64, setBase64] = useState(null);
 
   useEffect(() => {
     crawlApi.getDanhSachCQT().then((r) => {
@@ -408,7 +407,7 @@ const TraCuu: React.FC<RpaProps> = () => {
     setDataThongTinThue(_dataThongTinThue);
   };
   const traCuu = async () => {
-    LoadingService.start();
+    // LoadingService.start();
     resetData();
     setIsLoading(true);
 
@@ -439,7 +438,7 @@ const TraCuu: React.FC<RpaProps> = () => {
       await getThongTinThue(gpkdNgayCap);
     } catch (error) {
       setIsLoading(false);
-      LoadingService.stop();
+      // LoadingService.stop();
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
       } else {
@@ -447,7 +446,7 @@ const TraCuu: React.FC<RpaProps> = () => {
       }
     }
     setIsLoading(false);
-    LoadingService.stop();
+    // LoadingService.stop();
   };
   return (
     <div className="flex gap-10 justify-center  flex-col">
