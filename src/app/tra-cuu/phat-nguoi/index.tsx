@@ -37,7 +37,8 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
   //   };
   const [bienSo, setBienSo] = useState("");
   const [jsxContent, setJsxContent] = useState(null);
-  const [isLoading,setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState([]);
   // const regex = /(\d{2}[A-Za-z])/;
   // const resetData = ()=>{
   //   setList([])
@@ -51,10 +52,14 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
       const danhSachBien = [];
       for (const plate of list) {
         const data = await crawlApi.getPhatNguoi({ licenseNumber: plate });
-        danhSachBien.push(plate + "\n" + data.data);
+        if (data.data.violations !== null) {
+          danhSachBien.push(data.data.violations[0]);
+        }
+        // danhSachBien.push(plate + "\n" + data.data);
       }
       // setList(danhSachBien);
-      renderResult(danhSachBien);
+      setResult(danhSachBien);
+      // renderResult(danhSachBien);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -68,59 +73,12 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
 
     // LoadingService.stop()
   };
-  const renderResult = (list) => {
-    setJsxContent(null);
-    const startText = "KIỂM TRA PHẠT NGUỘI";
-    const resultText = "Chúc mừng!";
-    for (let i = 0; i < list.length; i++) {
-      const splittedText = list[i].split("\n");
-      for (let j = 0; j < splittedText.length; j++) {
-        if (splittedText[j] === startText) {
-          const newTextArray = splittedText.slice(0, 1).concat(splittedText.slice(7));
-          if (newTextArray[2] === resultText) {
-            setJsxContent((prevJsxContent) => (
-              <>
-                {prevJsxContent}
-                <hr className="my-5 mx-5 lg:mx-10 bg-black h-[2px]" />
-                <div className="px-5 lg:px-10">
-                  <p>{newTextArray[2]}</p>
-                  <p>{newTextArray[3]}</p>
-                </div>
-              </>
-            ));
-            break;
-          } else {
-            setJsxContent((prevJsxContent) => {
-              return (
-                <div>
-                  {prevJsxContent}
-                  <hr className="my-5 mx-5 lg:mx-10 bg-black h-[2px]" />
-                  <div className="px-5 lg:px-10">
-                    {newTextArray.slice(0, newTextArray.length - 5).map((item, index) => {
-                      return (
-                        <p>
-                          {index === 0
-                            ? `Biển số: ${item.replace(/(\d{2}[A-Z])/, "$1-").replace(/(\d{2})(\d{2})$/, "$1.$2")}`
-                            : item}
-                        </p>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            });
 
-            break;
-          }
-        }
-      }
-    }
-  };
   // console.log(list[0]?.split("\n")[0].replace(/(\d{2}[A-Z])/, '$1-').replace(/(\d{2})(\d{2})$/, '$1.$2'))
   return (
-    <>
+    <div className="min-w-fit w-1/2 mx-auto ">
       <DialogDemo isShowDialog={isShowDialog} />
-      <div className="mt-10 min-w-fit w-1/2 mx-auto ">
+      <div className="mt-10 ">
         <InputText
           className="w-full"
           onChange={(e) => setBienSo(e.target.value)}
@@ -138,32 +96,60 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
         onClick={handleSubmit}
         className="!mt-3 w-auto !mx-auto !flex"
       ></Button>
-      {jsxContent}
-    </>
+      <div>
+        {result.length ? (
+          result.map((item) => {
+            return (
+              <div className="border-b border-black py-5">
+                <div className="flex my-3  flex-wrap">
+                  <div className="text-md font-[600] basis-1/3">Biển kiểm soát</div>
+                  <div className="flex-1 text-md">{item.licenseNumber}</div>
+                </div>
+                <div className="flex my-3  flex-wrap">
+                  <div className="text-md font-[600] basis-1/3">Màu biển</div>
+                  <div className="flex-1 text-md">{item.specs}</div>
+                </div>
+                <div className="flex my-3  flex-wrap">
+                  <div className="text-md font-[600] basis-1/3">Loại phương tiện</div>
+                  <div className="flex-1 text-md">{item.vehicleType}</div>
+                </div>
+                <div className="flex my-3  flex-wrap">
+                  <div className="text-md font-[600] basis-1/3">Thời gian vi phạm</div>
+                  <div className="flex-1 text-md">{item.violationTime}</div>
+                </div>
+                <div className="flex my-3  flex-wrap">
+                  <div className="text-md font-[600] basis-1/3">Địa điểm vi phạm</div>
+                  <div className="flex-1 text-md">{item.violationAddress}</div>
+                </div>
+                <div className="flex my-3  flex-wrap">
+                  <div className="text-md font-[600] basis-1/3">Hành vi vi phạm</div>
+                  <div className="flex-1 text-md">{item.behavior}</div>
+                </div>
+                <div className="flex my-3  flex-wrap">
+                  <div className="text-md font-[600] basis-1/3">Trạng thái</div>
+                  <div className="flex-1 text-md ">
+                    <span className="text-danger badge">{item.status}</span>
+                  </div>
+                </div>
+                <div className="flex my-3  flex-wrap">
+                  <div className="text-md font-[600] basis-1/3">Đơn vị phát hiện vi phạm</div>
+                  <div className="flex-1 text-md">{item.provider}</div>
+                </div>
 
-    // <div>
-    //   <input type="file" onChange={handleFileUpload} accept=".xlsx" />
-    //   {jsonData && (
-    //     <table>
-    //       <thead>
-    //         <tr>
-    //           {Object.keys(jsonData[0]).map((key) => (
-    //             <th key={key}>{key}</th>
-    //           ))}
-    //         </tr>
-    //       </thead>
-    //       <tbody>
-    //         {jsonData.map((item, index) => (
-    //           <tr key={index}>
-    //             {Object.values(item).map((value, idx) => (
-    //               <td key={idx}>{value}</td>
-    //             ))}
-    //           </tr>
-    //         ))}
-    //       </tbody>
-    //     </table>
-    //   )}
-    // </div>
+                <div className="flex my-3  flex-wrap">
+                  <div className="text-md font-[600]">Nơi giải quyết vụ việc</div>
+                </div>
+                <div className="flex my-3 flex-wrap">
+                  <div className="text-md whitespace-pre-wrap">{item.contactAddress}</div>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <p className="text-center text-md font-semibold text-[#ff0000] mt-5">Không tìm thấy kết quả!</p>
+        )}
+      </div>
+    </div>
   );
 };
 

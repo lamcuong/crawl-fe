@@ -114,11 +114,11 @@ const thayDoiGiayPhepDKKD: ColumnsType<DataType> = [
   },
   {
     title: "Nội Dung Thay Đổi",
-    dataIndex: "base64",
-    key: "base64",
+    dataIndex: "file",
+    key: "file",
     render: (text, record, index) => (
       <div className="text-center">
-        <Link to={getPDF(text)} target="_blank">
+        <Link to={text} target="_blank">
           <Button>
             <i className="pi pi-file-pdf" />
           </Button>
@@ -150,15 +150,15 @@ const danhSachNguoiLienQuan = [
     render: (text) => <p className="break-all">{text}</p>,
   },
   {
-    title: "% Góp Vốn	",
-    key: "gopVon",
-    dataIndex: "gopVon",
+    title: "Giới tính",
+    key: "sex",
+    dataIndex: "sex",
     align: "left",
   },
   {
-    title: "Chức Vụ	",
-    key: "chucVu",
-    dataIndex: "chucVu",
+    title: "Ngày sinh",
+    key: "birthday",
+    dataIndex: "birthday",
     align: "left",
   },
 ];
@@ -168,7 +168,6 @@ const danhSachCongTyLienQuan = [
     dataIndex: "stt",
     key: "stt",
     render: (text, record, index) => {
-      console.log("1", index);
       return <p>{index + 1}</p>;
     },
     align: "left",
@@ -231,8 +230,8 @@ const danhSachCongTyLienQuan = [
   },
   {
     title: "Ngành nghề kinh doanh chính",
-    dataIndex: "tenNganhNgheKDChinh",
-    key: "tenNganhNgheKDChinh",
+    dataIndex: ["thongTinChiTiet", "tenNganhNgheKDChinh"],
+    key: ["thongTinChiTiet", "tenNganhNgheKDChinh"],
     align: "left",
   },
   {
@@ -279,6 +278,45 @@ const danhSachChiNhanh: ColumnsType<DataType> = [
     title: "Số CMT/Thẻ căn cước",
     dataIndex: "soCMT",
     key: "soCMT",
+    align: "left",
+  },
+  {
+    title: "Năm thành lập",
+    dataIndex: "thongTinChiTiet",
+    key: "thongTinChiTiet",
+    render: (text) => {
+      return <p>{text?.gpkdngayCap.split(" - ")[1]}</p>;
+    },
+    align: "left",
+  },
+  {
+    title: "Người đại diện pháp luật",
+    dataIndex: ["thongTinChiTiet", "daiDienPL"],
+    key: ["thongTinChiTiet", "daiDienPL"],
+    align: "left",
+  },
+  {
+    title: "Tên Giám Đốc",
+    dataIndex: ["thongTinChiTiet", "giamDoc"],
+    key: ["thongTinChiTiet", "giamDoc"],
+    align: "left",
+  },
+  {
+    title: "Tên Kế Toán Trưởng",
+    dataIndex: ["thongTinChiTiet", "keToanTruong"],
+    key: ["thongTinChiTiet", "keToanTruong"],
+    align: "left",
+  },
+  {
+    title: "Ngành nghề kinh doanh chính",
+    dataIndex: ["thongTinChiTiet", "tenNganhNgheKDChinh"],
+    key: ["thongTinChiTiet", "tenNganhNgheKDChinh"],
+    align: "left",
+  },
+  {
+    title: "Địa chỉ trụ sở",
+    dataIndex: ["thongTinChiTiet", "diaChiTruSo"],
+    key: ["thongTinChiTiet", "diaChiTruSo"],
     align: "left",
   },
   {
@@ -425,7 +463,6 @@ const TraCuu: React.FC<RpaProps> = () => {
 
       const thayDoiGiayPhepDKKD = await crawlApi.getThayDoiDKKD({ taxCode: valueNNT.taxCode, loaiThongBao: "AMEND" });
       setDataThayDoiGiayPhepDKKD(thayDoiGiayPhepDKKD.data);
-
       const gpkdNgayCap = danhSachChiNhanh.data[0].thongTinChiTiet.gpkdngayCap.split(" - ")[1];
 
       const danhSachNguoiLienQuan = await crawlApi.getDanhSachNguoiLienQuan({ taxCode: valueNNT.taxCode });
@@ -500,7 +537,7 @@ const TraCuu: React.FC<RpaProps> = () => {
         />
 
         <TableComponent
-          className="col-span-full"
+          className="col-span-full "
           title="Danh sách Công ty liên quan của Người Liên Quan"
           columns={danhSachCongTyLienQuan}
           data={dataDanhSachCongTyLienQuan}

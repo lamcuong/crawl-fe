@@ -30,7 +30,13 @@ const TableComponent: React.FC<DataProps> = ({ data, columns, title, className }
   return (
     <div className={className}>
       <p className="font-bold">{title}</p>
-      <Table size={`${isWideScreen ? "large" : "small"}`} bordered columns={columns} dataSource={data} />
+      <Table
+        className="whitespace-break-spaces"
+        size={`${isWideScreen ? "large" : "small"}`}
+        bordered
+        columns={columns}
+        dataSource={data}
+      />
     </div>
   );
 };
