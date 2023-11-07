@@ -10,40 +10,8 @@ import { DialogDemo } from "../dialog";
 import crawlApi from "../../../apis";
 import moment from "moment";
 import { Link } from "react-router-dom";
-// const danhSachCoDong: ColumnsType<DataType> = [
-//   {
-//     title: "STT",
-//     dataIndex: "stt",
-//     key: "stt",
-//     render: (text, record, index) => <p>{index + 1}</p>,
-//     align: "left",
-//   },
-//   {
-//     title: "Tên",
-//     dataIndex: "name",
-//     key: "name",
-//     align: "left",
-//   },
-//   {
-//     title: "CCCD/MST",
-//     dataIndex: "cardId",
-//     key: "cardId",
-//     align: "left",
-//     render: (text) => <p className="break-all">{text}</p>,
-//   },
-//   {
-//     title: "% Góp Vốn	",
-//     key: "sex",
-//     dataIndex: "sex",
-//     align: "left",
-//   },
-//   {
-//     title: "Chức Vụ	",
-//     key: "birthday",
-//     dataIndex: "birthday",
-//     align: "left",
-//   },
-// ];
+import { RadioButton } from "primereact/radiobutton";
+
 const thongTinVeThue = [
   {
     title: "STT",
@@ -172,13 +140,9 @@ const danhSachCongTyLienQuan = [
     align: "left",
   },
   {
-    title: "Liên quan với	",
+    title: "Liên quan với",
     dataIndex: "nguoiLienQuan",
     key: "nguoiLienQuan",
-    // render:(text,record)=>{
-    //   console.log('tesx',record)
-    //   return<div>{record.thongTinChiTiet.daiDienPL}</div>
-    // },
     align: "left",
   },
   {
@@ -370,15 +334,18 @@ const dataThongTinThueDefault = [
   },
 ];
 const TraCuu: React.FC<RpaProps> = () => {
-  const [valueNNT, setValueNTT] = useState({
+  const initialValue = {
     taxCode: "",
     cardId: "",
-  });
+    parentTaxCode: "",
+  };
+  const [valueNNT, setValueNTT] = useState(initialValue);
+
+  const [searchType, setSearchType] = useState("taxCode");
 
   const [isShowDialog, setIsShowDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [dataDanhSachChiNhanh, setDataDanhSachChiNhanh] = useState([]);
-  // const [dataDanhSachCoDong, setDataDanhSachCoDong] = useState([]);
   const [dataDanhSachNguoiLienQuan, setDataDanhSachNguoiLienQuan] = useState([]);
   const [dataDanhSachCongTyLienQuan, setDataDanhSachCongTyLienQuan] = useState([]);
   const [danhSachCqt, setDanhSachCqt] = useState([]);
@@ -402,7 +369,6 @@ const TraCuu: React.FC<RpaProps> = () => {
         congTyLienQuan.data.forEach((item) => {
           danhSachCongTyLienQuan.push({ ...item, nguoiLienQuan: nguoiLienQuan.name });
         });
-        // danhSachCongTyLienQuan.push([...congTyLienQuan.data]);
       }
       await new Promise((resolve) => setTimeout(resolve, 3000));
     }
@@ -410,7 +376,6 @@ const TraCuu: React.FC<RpaProps> = () => {
   };
   const resetData = () => {
     setDataDanhSachChiNhanh([]);
-    // setDataDanhSachCoDong([]);
     setDataDanhSachCongTyLienQuan([]);
     setDataDanhSachNguoiLienQuan([]);
   };
@@ -444,15 +409,9 @@ const TraCuu: React.FC<RpaProps> = () => {
     setDataThongTinThue(_dataThongTinThue);
   };
   const traCuu = async () => {
-    // LoadingService.start();
     resetData();
     setIsLoading(true);
     try {
-      // const danhSachChiNhanh = await handleApiRequest(apiDanhSachChiNhanh, {
-      //   taxCode: valueNNT.taxCode ? valueNNT.taxCode : null,
-      //   cardId: valueNNT.cardId ? valueNNT.cardId : null,
-      // });
-
       const danhSachChiNhanh = await crawlApi.getDanhSachChiNhanh({
         taxCode: valueNNT.taxCode ? valueNNT.taxCode : null,
         cardId: valueNNT.cardId ? valueNNT.cardId : null,
@@ -475,7 +434,6 @@ const TraCuu: React.FC<RpaProps> = () => {
       }
     } catch (error) {
       setIsLoading(false);
-      // LoadingService.stop();
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
       } else {
@@ -483,32 +441,63 @@ const TraCuu: React.FC<RpaProps> = () => {
       }
     }
     setIsLoading(false);
-    // LoadingService.stop();
+  };
+  const handleSearchTypeChange = (e) => {
+    setValueNTT(initialValue);
+    setSearchType(e.target.value);
   };
   return (
     <div className="flex gap-10 justify-center  flex-col">
       <DialogDemo isShowDialog={isShowDialog} setIsShowDialog={setIsShowDialog} />
-
+      <div className="flex align-items-center justify-center gap-5">
+        <div>
+          <RadioButton
+            inputId="taxCode"
+            name="taxCode"
+            value="taxCode"
+            onChange={handleSearchTypeChange}
+            checked={searchType === "taxCode"}
+          />
+          <label htmlFor="taxCode" className="ml-2">
+            Tra cứu theo mã số thuế/Số đăng ký kinh doanh
+          </label>
+        </div>
+        <div>
+          <RadioButton
+            inputId="cardId"
+            name="cardId"
+            value="cardId"
+            onChange={handleSearchTypeChange}
+            checked={searchType === "cardId"}
+          />
+          <label htmlFor="cardId" className="ml-2">
+            Tra cứu theo CMND/CCCD
+          </label>
+        </div>
+      </div>
       <div className="w-1/2 lg:w-1/3 flex flex-col mx-auto">
-        <InputText
-          className="p-2"
-          id="taxCode"
-          placeholder="Mã số thuế"
-          onChange={(e) => handleChangeNNT(e.target.name, e.target.value)}
-          type="text"
-          value={valueNNT.taxCode}
-          name="taxCode"
-        />
+        {searchType === "taxCode" ? (
+          <InputText
+            className="p-2"
+            id="taxCode"
+            placeholder="Mã số thuế"
+            onChange={(e) => handleChangeNNT(e.target.name, e.target.value)}
+            type="text"
+            value={valueNNT.taxCode}
+            name="taxCode"
+          />
+        ) : (
+          <InputText
+            className="p-2"
+            id="cardId"
+            placeholder="CCCD/CMND"
+            onChange={(e) => handleChangeNNT(e.target.name, e.target.value)}
+            type="text"
+            value={valueNNT.cardId}
+            name="cardId"
+          />
+        )}
 
-        {/* <InputText
-          className="p-2 !mt-2"
-          id="cardId"
-          placeholder="Card ID"
-          onChange={(e) => handleChangeNNT(e.target.name, e.target.value)}
-          type="text"
-          value={valueNNT.cardId}
-          name="cardId"
-        /> */}
         <Button
           type="button"
           className="!mt-3 w-auto !mx-auto"
@@ -518,11 +507,6 @@ const TraCuu: React.FC<RpaProps> = () => {
         />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ">
-        {/* <TableComponent
-          title="Danh sách Cổ đông/Người góp vốn hiện tại"
-          columns={danhSachCoDong}
-          data={dataDanhSachCoDong}
-        /> */}
         <TableComponent
           className="col-span-full"
           title="Thông Tin Về Thuế & Nghĩa Vụ Khác"

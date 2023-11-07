@@ -12,7 +12,7 @@ _axios.interceptors.request.use((config: any) => {
       ...config,
       headers: {
         ...(config?.headers || {}),
-        Authorization: `Bearer ${Cookies.get('Authorization') ?? ""}`,
+        Authorization: `Bearer ${Cookies.get("Authorization") ?? ""}`,
         "Content-Type": "application/json",
         Accept: "*/*",
       },

@@ -34,22 +34,7 @@ const getDanhSachCongTyLienQuan = (input: any) => {
   return handleApiRequest(() => _axios.post(apiDanhSachCongTyLienQuan, input));
 };
 const getTaiSan = (input: any) => {
-  return handleApiRequest(() =>
-    axios.post(
-      `http://103.61.122.195:8092/crawl-data/security-transaction`,
-      {
-        taxCode: "0315320846",
-        soKhung: "",
-        keyHighlight: "Khung",
-      },
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-      }
-    )
-  );
-  // return handleApiRequest(() => _axios.post(apiTaiSan, input));
+  return handleApiRequest(() => _axios.post(apiTaiSan, input));
 };
 const getPhatNguoi = (input: any) => {
   return handleApiRequest(() => _axios.post(apiPhatNguoi, input));

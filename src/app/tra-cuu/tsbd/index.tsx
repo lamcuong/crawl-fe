@@ -46,7 +46,7 @@ const TaiSan: React.FC<TaiSanProps> = () => {
   const initialValue = {
     taxCode: "",
     soKhung: "",
-    thongTinTaiSan: "",
+    keyHighlight: "",
   };
   const [value, setValue] = useState(initialValue);
   const [data, setData] = useState([]);
@@ -57,48 +57,23 @@ const TaiSan: React.FC<TaiSanProps> = () => {
     setData([]);
   };
 
-  // const renderText = (item) => {
-  //   let isFile = false;
-  //   let fileIndex = -1;
-  //   return item.map((text, index) => {
-  //     if (item[index - 1]?.startsWith("File đính kèm")) {
-  //       isFile = true;
-  //     }
-  //     if (isFile) {
-  //       fileIndex += 1;
-  //     }
-  //     return (
-  //       <p className="my-1">
-  //         {isFile ? (
-  //           <a className="!underline" href={files[fileIndex] || "#"}>
-  //             {text}
-  //           </a>
-  //         ) : (
-  //           text
-  //         )}
-  //       </p>
-  //     );
-  //   });
-  // };
   const handleSubmit = async () => {
-    // LoadingService.start();
     resetData();
     setIsLoading(true);
     try {
-      const data = await crawlApi.getTaiSan({ taxCode: value.taxCode || null, soKhung: value.soKhung || null });
-      // setFiles(data.data.files);
+      const data = await crawlApi.getTaiSan({
+        taxCode: value.taxCode || null,
+        soKhung: value.soKhung || null,
+        keyHighlight: value.keyHighlight || null,
+      });
       setData(data.data.html);
-      // formatData(data.data.data.split("\n"));
       setIsLoading(false);
     } catch (error) {
-      console.log("err", error);
-      // LoadingService.stop();
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
       }
     }
     setIsLoading(false);
-    // LoadingService.stop();
   };
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -165,12 +140,12 @@ const TaiSan: React.FC<TaiSanProps> = () => {
           </div>
         )}
         <div className="mt-2">
-          <label htmlFor="thongTinTaiSan">Thông tin tài sản</label>
+          <label htmlFor="keyHighlight">Thông tin tài sản</label>
           <InputText
-            name="thongTinTaiSan"
-            id="thongTinTaiSan"
+            name="keyHighlight"
+            id="keyHighlight"
             onChange={handleChange}
-            value={value.thongTinTaiSan}
+            value={value.keyHighlight}
             className="border-black w-full "
           />
         </div>
@@ -183,19 +158,6 @@ const TaiSan: React.FC<TaiSanProps> = () => {
         label={isLoading ? "Đang tra cứu" : "Tra cứu"}
       ></Button>
       <div dangerouslySetInnerHTML={{ __html: data }} />
-
-      {/* {data.length > 0 && (
-        <div>
-          {data?.map((item) => {
-            return (
-              <div>
-                <h3 className="font-bold my-4">Mô tả tài sản bảo đảm</h3>
-                <div className="border border-neutral-300 p-5">{Array.isArray(item) ? renderText(item) : item}</div>
-              </div>
-            );
-          })}
-        </div>
-      )} */}
     </div>
   );
 };

@@ -12,40 +12,11 @@ type PhatNguoiProps = {};
 const PhatNguoi: React.FC<PhatNguoiProps> = () => {
   const [isShowDialog, setIsShowDialog] = useState(false);
 
-  // const [jsonData, setJsonData] = useState(null);
-  // const [list, setList] = useState([]);
-  //   const handleFileUpload = (event) => {
-  //     const file = event.target.files[0];
-  //     if (file) {
-  //       const reader = new FileReader();
-
-  //       reader.onload = (e) => {
-  //         const data = e.target.result;
-  //         const workbook = XLSX.read(data, { type: "binary" });
-
-  //         const sheetName = workbook.SheetNames[0];
-  //         const worksheet = workbook.Sheets[sheetName];
-  //         console.log(workbook);
-
-  //         const dataJson = XLSX.utils.sheet_to_json(worksheet);
-
-  //         console.log(dataJson);
-  //       };
-
-  //       reader.readAsBinaryString(file);
-  //     }
-  //   };
   const [bienSo, setBienSo] = useState("");
-  const [jsxContent, setJsxContent] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState([]);
-  // const regex = /(\d{2}[A-Za-z])/;
-  // const resetData = ()=>{
-  //   setList([])
-  // }
+
   const handleSubmit = async () => {
-    // resetData()
-    // LoadingService.start()
     setIsLoading(true);
     try {
       const list = bienSo.replaceAll(/\s+/g, "").split(/[,;]/);
@@ -55,26 +26,19 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
         if (data.data.violations !== null) {
           danhSachBien.push(data.data.violations[0]);
         }
-        // danhSachBien.push(plate + "\n" + data.data);
       }
-      // setList(danhSachBien);
       setResult(danhSachBien);
-      // renderResult(danhSachBien);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
 
-      // LoadingService.stop()
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
       }
     }
     setIsLoading(false);
-
-    // LoadingService.stop()
   };
 
-  // console.log(list[0]?.split("\n")[0].replace(/(\d{2}[A-Z])/, '$1-').replace(/(\d{2})(\d{2})$/, '$1.$2'))
   return (
     <div className="min-w-fit w-1/2 mx-auto ">
       <DialogDemo isShowDialog={isShowDialog} />
