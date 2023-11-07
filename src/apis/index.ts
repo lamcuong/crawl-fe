@@ -34,7 +34,13 @@ const getDanhSachCongTyLienQuan = (input: any) => {
   return handleApiRequest(() => _axios.post(apiDanhSachCongTyLienQuan, input));
 };
 const getTaiSan = (input: any) => {
-  return handleApiRequest(() => _axios.post(apiTaiSan, input));
+  return handleApiRequest(() =>
+    axios.post(`http://103.61.122.195:8092/crawl-data/security-transaction`, {
+      taxCode: "0315320846",
+      soKhung: null,
+      keyHighlight: "Khung",
+    })
+  );
 };
 const getPhatNguoi = (input: any) => {
   return handleApiRequest(() => _axios.post(apiPhatNguoi, input));

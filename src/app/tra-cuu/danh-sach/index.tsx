@@ -9,7 +9,6 @@ import { Button } from "primereact/button";
 import { DialogDemo } from "../dialog";
 import crawlApi from "../../../apis";
 import moment from "moment";
-import { getPDF } from "../../../utils/download";
 import { Link } from "react-router-dom";
 // const danhSachCoDong: ColumnsType<DataType> = [
 //   {
@@ -448,7 +447,6 @@ const TraCuu: React.FC<RpaProps> = () => {
     // LoadingService.start();
     resetData();
     setIsLoading(true);
-
     try {
       // const danhSachChiNhanh = await handleApiRequest(apiDanhSachChiNhanh, {
       //   taxCode: valueNNT.taxCode ? valueNNT.taxCode : null,
@@ -472,7 +470,9 @@ const TraCuu: React.FC<RpaProps> = () => {
       setDataDanhSachNguoiLienQuan(danhSachNguoiLienQuan.data);
 
       await getDanhSachCongTyLienQuan(danhSachNguoiLienQuan.data);
-      await getThongTinThue(gpkdNgayCap);
+      if (valueNNT.taxCode) {
+        await getThongTinThue(gpkdNgayCap);
+      }
     } catch (error) {
       setIsLoading(false);
       // LoadingService.stop();
@@ -500,7 +500,7 @@ const TraCuu: React.FC<RpaProps> = () => {
           name="taxCode"
         />
 
-        <InputText
+        {/* <InputText
           className="p-2 !mt-2"
           id="cardId"
           placeholder="Card ID"
@@ -508,7 +508,7 @@ const TraCuu: React.FC<RpaProps> = () => {
           type="text"
           value={valueNNT.cardId}
           name="cardId"
-        />
+        /> */}
         <Button
           type="button"
           className="!mt-3 w-auto !mx-auto"
