@@ -4,8 +4,7 @@ import React, { useState } from "react";
 // import _axios from "@/api/config";
 // import { DialogDemo } from "../login";
 import { RadioButton } from "primereact/radiobutton";
-import { LoadingService } from "../../../utils/LoadingService";
-import { DialogDemo } from "../dialog";
+import { DialogDemo } from "../components/LoginDialog";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import crawlApi from "../../../apis";
@@ -13,36 +12,6 @@ type TaiSanProps = {};
 
 const TaiSan: React.FC<TaiSanProps> = () => {
   const [files, setFiles] = useState([]);
-  // const formatData = (data) => {
-  //   const startText = "Mô tả tài sản bảo đảm";
-  //   const endText = "ĐĂNG KÝ GIAO DỊCH BẢO ĐẢM";
-  //   const emptyText = "Không có bản ghi nào dựa trên tiêu chí tìm kiếm được tìm thấy.";
-  //   let sampleList = [];
-  //   let startIndex = -1;
-  //   let endIndex = -1;
-  //   if (data.includes(emptyText)) {
-  //     setData([emptyText]);
-  //     return;
-  //   }
-  //   for (let i = 0; i < data.length; i++) {
-  //     if (data[i] === startText) {
-  //       startIndex = i;
-  //     }
-  //     if (data[i]?.includes(endText)) {
-  //       endIndex = i;
-  //     }
-  //     if (
-  //       (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) ||
-  //       (startIndex !== -1 && i === data.length - 1 && endIndex === -1)
-  //     ) {
-  //       const extractedData = data.slice(startIndex + 1, endIndex);
-  //       sampleList.push(extractedData);
-  //       startIndex = -1;
-  //       endIndex = -1;
-  //     }
-  //   }
-  //   setData(sampleList);
-  // };
   const initialValue = {
     taxCode: "",
     soKhung: "",

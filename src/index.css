@@ -63,7 +63,11 @@ code {
 .p-sidebar .p-sidebar-content{
   padding: 0 !important;
 }
-
+.p-dropdown .p-dropdown-label {
+  background: transparent;
+  font-size: 14px;
+  border: 0 none;
+}
 .text-danger {
   background: transparent;
   border-color: #de4848;

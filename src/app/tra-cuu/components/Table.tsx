@@ -12,9 +12,10 @@ type DataProps = {
   columns: ColumnsType<DataType>;
   title: string;
   className?: string;
+  pagination?: boolean;
 };
 
-const TableComponent: React.FC<DataProps> = ({ data, columns, title, className }) => {
+const TableComponent: React.FC<DataProps> = ({ data, columns, title, className, pagination }) => {
   const [isWideScreen, setIsWideScreen] = useState(false);
   const handleResize = () => {
     setIsWideScreen(window.innerWidth >= 1024);
@@ -31,6 +32,7 @@ const TableComponent: React.FC<DataProps> = ({ data, columns, title, className }
     <div className={className}>
       <p className="font-bold">{title}</p>
       <Table
+        pagination={pagination === false ? false : {}}
         className="whitespace-break-spaces"
         size={`${isWideScreen ? "large" : "small"}`}
         bordered

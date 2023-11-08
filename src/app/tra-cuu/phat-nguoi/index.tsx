@@ -1,15 +1,33 @@
 //@ts-nocheck
 "use client";
-import React, { useState } from "react";
-// import * as XLSX from "xlsx";
-import { DialogDemo } from "../dialog";
-import { LoadingService } from "../../../utils/LoadingService";
+import React, { useState, useRef } from "react";
+import { DialogDemo } from "../components/LoginDialog";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import crawlApi from "../../../apis";
+import { FileUpload } from "primereact/fileupload";
+import { toast } from "react-toastify";
 type PhatNguoiProps = {};
 
 const PhatNguoi: React.FC<PhatNguoiProps> = () => {
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const handleUpload = async () => {
+    if (selectedFile) {
+      const input = new FormData();
+      input.append("files", selectedFile);
+
+      try {
+        const response = await crawlApi.getUploadPhatNguoi(input);
+        setResult(response.data);
+      } catch (error) {
+        toast.error("Upload thất bại");
+      }
+    }
+    ref.current.clear();
+    setSelectedFile(null);
+  };
+
   const [isShowDialog, setIsShowDialog] = useState(false);
 
   const [bienSo, setBienSo] = useState("");
@@ -21,13 +39,18 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
     try {
       const list = bienSo.replaceAll(/\s+/g, "").split(/[,;]/);
       const danhSachBien = [];
-      for (const plate of list) {
-        const data = await crawlApi.getPhatNguoi({ licenseNumber: plate });
-        if (data.data.violations !== null) {
-          danhSachBien.push(data.data.violations[0]);
+      if (selectedFile) {
+        await handleUpload();
+      } else {
+        for (const plate of list) {
+          const data = await crawlApi.getPhatNguoi({ licenseNumber: plate });
+          if (data.data.violations !== null) {
+            danhSachBien.push(data.data.violations[0]);
+          }
         }
+        setResult(danhSachBien);
       }
-      setResult(danhSachBien);
+
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -39,6 +62,7 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
     setIsLoading(false);
   };
 
+  const ref = useRef();
   return (
     <div className="min-w-fit w-1/2 mx-auto ">
       <DialogDemo isShowDialog={isShowDialog} />
@@ -48,10 +72,20 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
           onChange={(e) => setBienSo(e.target.value)}
           placeholder="Không cần nhập các kí tự đặc biệt như . - "
         />
-        <p className="text-[14px] text-gray-500 my-2">
-          Nhập vào biển số xe hợp lệ, ví dụ: 20C11770. Các biển số xe cách nhau bằng dấu , hoặc{" "}
-          <Button className="!text-sm !h-auto !p-2 !align-baseline">Import excel</Button>
-        </p>
+        <div className="text-[14px] text-gray-500 my-2 flex items-center">
+          <p>Nhập vào biển số xe hợp lệ, ví dụ: 20C11770. Các biển số xe cách nhau bằng dấu , hoặc</p>
+          <FileUpload
+            ref={ref}
+            url="#"
+            customUpload
+            uploadHandler={(e) => setSelectedFile(e.files[0])}
+            className="!text-sm !h-auto !p-2 !align-baseline inline"
+            chooseLabel={selectedFile?.name ? selectedFile.name : "Import excel"}
+            mode="basic"
+            accept="*"
+            auto
+          />
+        </div>
       </div>
       <Button
         label={isLoading ? "Đang tra cứu" : "Tra cứu"}
