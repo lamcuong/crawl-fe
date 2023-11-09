@@ -13,7 +13,7 @@ import {
   apiThayDoiDKKD,
   apiUploadPhatNguoi,
 } from "../config";
-import { handleApiRequest, handleApiRequestWithRetry } from "./handle";
+import { handleApiRequest, handleApiRequestWithMessage } from "./handle";
 
 const login = (input: any) => {
   return handleApiRequest(() =>
@@ -26,38 +26,38 @@ const login = (input: any) => {
   );
 };
 const getDanhSachChiNhanh = (input: any) => {
-  return handleApiRequestWithRetry(() => _axios.post(apiDanhSachChiNhanh, input));
+  return handleApiRequestWithMessage(() => _axios.post(apiDanhSachChiNhanh, input));
 };
 const getDanhSachNguoiLienQuan = (input: any) => {
-  return handleApiRequestWithRetry(() => _axios.post(apiDanhSachNguoiLienQuan, input));
+  return handleApiRequest(() => _axios.post(apiDanhSachNguoiLienQuan, input));
 };
 const getDanhSachCongTyLienQuan = (input: any) => {
-  return handleApiRequestWithRetry(() => _axios.post(apiDanhSachCongTyLienQuan, input));
+  return handleApiRequest(() => _axios.post(apiDanhSachCongTyLienQuan, input));
 };
 const getTaiSan = (input: any) => {
-  return handleApiRequestWithRetry(() => _axios.post(apiTaiSan, input));
+  return handleApiRequestWithMessage(() => _axios.post(apiTaiSan, input));
 };
 const getPhatNguoi = (input: any) => {
-  return handleApiRequestWithRetry(() => _axios.post(apiPhatNguoi, input));
+  return handleApiRequestWithMessage(() => _axios.post(apiPhatNguoi, input));
 };
 const getUploadPhatNguoi = (input: any) => {
-  return handleApiRequestWithRetry(() => _axios.post(apiUploadPhatNguoi, input));
+  return handleApiRequestWithMessage(() => _axios.post(apiUploadPhatNguoi, input));
 };
 const getCuongCheThue = (input: any) => {
-  return handleApiRequestWithRetry(() => _axios.post(apiCuongCheThue, input));
+  return handleApiRequest(() => _axios.post(apiCuongCheThue, input));
 };
 const getRuiRoThue = (input: any) => {
-  return handleApiRequestWithRetry(() => _axios.post(apiRuiRoThue, input));
+  return handleApiRequest(() => _axios.post(apiRuiRoThue, input));
 };
 const getDanhSachCQT = (input: any) => {
   const cqt = input ? `?cap=cc&byma=true&cqt=${input}` : "";
   return fetch(`/listdmcqt.html${cqt}`).then((r) => r.json().then((data) => data));
 };
 const getNoBaoHiem = (input: any) => {
-  return handleApiRequestWithRetry(() => _axios.post(apiNoBaoHiem, input));
+  return handleApiRequest(() => _axios.post(apiNoBaoHiem, input));
 };
 const getThayDoiDKKD = (input: any) => {
-  return handleApiRequestWithRetry(() => _axios.post(apiThayDoiDKKD, input));
+  return handleApiRequest(() => _axios.post(apiThayDoiDKKD, input));
 };
 const crawlApi = {
   login,

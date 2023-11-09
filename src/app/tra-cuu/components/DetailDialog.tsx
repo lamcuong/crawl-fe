@@ -22,7 +22,7 @@ const noBaoHiemFields = [
     header: "Địa chỉ trụ sở",
   },
   {
-    field: "mothDebt",
+    field: "monthDebt",
     header: "Số tháng nợ",
   },
   {
@@ -38,29 +38,8 @@ const noBaoHiemFields = [
     header: "Ghi chú",
   },
 ];
+
 const cuongCheThueFields = [
-  {
-    field: "toChucCaNhanThongBao",
-    header: "Tổ chức cá nhân thông báo",
-  },
-  {
-    field: "diaChiTruSoChinh",
-    header: "Địa chỉ trụ sở chính",
-  },
-  {
-    field: "trangThaiHoatDong",
-    header: "Trạng thái hoạt động",
-  },
-  {
-    field: "coQuanThueQuanLy",
-    header: "Cơ quan thuế quản lý",
-  },
-  {
-    field: "taxsEnforceResult",
-    header: "Thông báo",
-  },
-];
-const cuongCheThueChildFields = [
   {
     field: "tenLoaiThongBao",
     header: "Tên loại thông báo",
@@ -112,11 +91,9 @@ const ruiRoThue = [
 const DetailDialog: React.FC<DetailDialogProps> = ({ visible, setVisible, content, dialogName }) => {
   const render = () => {
     let field;
-    let childField;
     switch (dialogName) {
       case "Cưỡng chế thuế":
         field = cuongCheThueFields;
-        childField = cuongCheThueChildFields;
         break;
       case "Rủi ro cao về thuế":
         field = ruiRoThue;
@@ -124,28 +101,20 @@ const DetailDialog: React.FC<DetailDialogProps> = ({ visible, setVisible, conten
       case "Nợ bảo hiểm xã hội hiện hữu":
         field = noBaoHiemFields;
     }
-    console.log(content);
-    return field?.map((item) => {
-      const isArray = Array.isArray(content?.[item.field]);
-      return isArray ? (
-        content[item.field].map((value) => {
-          return (
-            <div className="border-y">
-              {childField.map((item, index) => {
-                return (
-                  <div className="flex">
-                    <p className="basis-1/3 font-semibold">{item.header}</p>
-                    <p>{value[item.field]}</p>
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })
-      ) : (
-        <div className={`flex ${isArray ? "border-t" : ""}`}>
-          <p className="basis-1/3 font-semibold">{item.header}</p>
-          <p>{content?.[item.field]}</p>
+
+    return content?.map((value) => {
+      return (
+        <div className="border-y">
+          {field.map((item, index) => {
+            return (
+              <div className="flex">
+                <p className="basis-1/3 font-semibold">{item.header}</p>
+                <p className="flex-1">
+                  {typeof value[item.field] === "number" ? value[item.field].toLocaleString() : value[item.field]}
+                </p>
+              </div>
+            );
+          })}
         </div>
       );
     });

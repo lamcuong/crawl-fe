@@ -1,13 +1,12 @@
 //@ts-nocheck
 import "../../layout/tsbd/index.css";
 import React, { useState } from "react";
-// import _axios from "@/api/config";
-// import { DialogDemo } from "../login";
 import { RadioButton } from "primereact/radiobutton";
 import { DialogDemo } from "../components/LoginDialog";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import crawlApi from "../../../apis";
+import { toast } from "react-toastify";
 type TaiSanProps = {};
 
 const TaiSan: React.FC<TaiSanProps> = () => {
@@ -40,6 +39,8 @@ const TaiSan: React.FC<TaiSanProps> = () => {
     } catch (error) {
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
+      } else {
+        toast.error(error || `Lỗi hệ thống, Vui lòng thử lại`);
       }
     }
     setIsLoading(false);
@@ -68,7 +69,7 @@ const TaiSan: React.FC<TaiSanProps> = () => {
             checked={searchType === "taxCode"}
           />
           <label htmlFor="taxCode" className="ml-2">
-            Tra cứu theo mã số thuế/Số đăng ký kinh doanh
+            Tra cứu theo mã số thuế
           </label>
         </div>
         <div>
@@ -87,7 +88,7 @@ const TaiSan: React.FC<TaiSanProps> = () => {
       <div className="w-1/2 !block !mx-auto mt-5">
         {searchType === "taxCode" ? (
           <div>
-            <label htmlFor="taxCode">Mã số thuế/Số đăng ký kinh doanh</label>
+            <label htmlFor="taxCode">Mã số thuế</label>
             <InputText
               name="taxCode"
               id="taxCode"
@@ -116,6 +117,7 @@ const TaiSan: React.FC<TaiSanProps> = () => {
             onChange={handleChange}
             value={value.keyHighlight}
             className="border-black w-full "
+            placeholder="Các từ khoá cách nhau bằng dấu phẩy (,)"
           />
         </div>
       </div>

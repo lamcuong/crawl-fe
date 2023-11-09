@@ -14,7 +14,6 @@ import { Link } from "react-router-dom";
 import { RadioButton } from "primereact/radiobutton";
 import DetailDialog from "../components/DetailDialog";
 import { Dropdown } from "primereact/dropdown";
-
 const thayDoiGiayPhepDKKD: ColumnsType<DataType> = [
   {
     title: "STT",
@@ -61,7 +60,7 @@ const danhSachNguoiLienQuan = [
     align: "left",
   },
   {
-    title: "CCCD/MST",
+    title: "CCCD",
     dataIndex: "cardId",
     key: "cardId",
     align: "left",
@@ -97,7 +96,7 @@ const danhSachCongTyLienQuan = [
     align: "left",
   },
   {
-    title: "Tên Cty",
+    title: "Tên công ty",
     dataIndex: "tenNNT",
     key: "tenNNT",
     align: "left",
@@ -320,6 +319,7 @@ const TraCuu: React.FC<RpaProps> = () => {
       key: "totalMoney",
       dataIndex: "totalMoney",
       align: "left",
+      render: (text) => <p>{text ? text.toLocaleString() : ""}</p>,
     },
     {
       title: "Số Tháng Nợ",
@@ -409,13 +409,19 @@ const TraCuu: React.FC<RpaProps> = () => {
     setValueNTT({ ...valueNNT, [name]: newValue });
   };
   const getDanhSachCongTyLienQuan = async () => {
-    const congTyLienQuan = await crawlApi.getDanhSachCongTyLienQuan({ taxCode: valueNNT.taxCode });
-    setDataDanhSachCongTyLienQuan(congTyLienQuan.data);
+    await handleCallApi(
+      () => crawlApi.getDanhSachCongTyLienQuan({ taxCode: valueNNT.taxCode }),
+      (congTyLienQuan) => {
+        setDataDanhSachCongTyLienQuan(congTyLienQuan.data);
+      }
+    );
   };
   const resetData = () => {
     setDataDanhSachChiNhanh([]);
     setDataDanhSachCongTyLienQuan([]);
     setDataDanhSachNguoiLienQuan([]);
+    setDataThayDoiGiayPhepDKKD([]);
+    setDataThongTinThue(dataThongTinThueDefault);
   };
   const getThongTinThue = async (fromDate: string) => {
     const _dataThongTinThue = [...dataThongTinThue];
@@ -426,9 +432,10 @@ const TraCuu: React.FC<RpaProps> = () => {
       toDate: moment().format("DD/MM/YYYY"),
     });
 
-    _dataThongTinThue[0].result = cuongCheThue.data.taxsEnforceResult.length ? "Có" : "Không";
-    _dataThongTinThue[0].time = cuongCheThue.data.taxsEnforceResult[0]?.ngayThongBao || "";
-    _dataThongTinThue[0].detailResult = cuongCheThue.data;
+    _dataThongTinThue[0].result = cuongCheThue.data?.taxsEnforceResult.length ? "Có" : "Không";
+    _dataThongTinThue[0].time =
+      cuongCheThue.data?.taxsEnforceResult[cuongCheThue.data?.taxsEnforceResult?.length - 1]?.ngayThongBao || "";
+    _dataThongTinThue[0].detailResult = cuongCheThue.data?.taxsEnforceResult;
 
     if (valueCQT?.cqtTinh?.code) {
       const ruiRoThue = await crawlApi.getRuiRoThue({
@@ -436,21 +443,38 @@ const TraCuu: React.FC<RpaProps> = () => {
         cqtTinh: valueCQT?.cqtTinh?.code,
         cqtQuanLy: valueCQT?.cqtQuanLy?.code,
       });
-      _dataThongTinThue[1].result = ruiRoThue.data.length ? "Có" : "Không";
-      _dataThongTinThue[1].time = ruiRoThue.data[0]?.ngayQuyetDinh || "";
-      _dataThongTinThue[1].detailResult = ruiRoThue.data[0];
+      _dataThongTinThue[1].result = ruiRoThue.data?.length ? "Có" : "Không";
+      _dataThongTinThue[1].time = ruiRoThue.data?.[0]?.ngayQuyetDinh || "";
+      _dataThongTinThue[1].detailResult = ruiRoThue.data;
     }
 
     const noBaoHiem = await crawlApi.getNoBaoHiem({
       taxCode: valueNNT.taxCode,
     });
-    _dataThongTinThue[2].result = noBaoHiem?.data?.debtDetail.length ? "Có" : "Không";
+    _dataThongTinThue[2].result = noBaoHiem?.data?.debtDetail?.length ? "Có" : "Không";
     _dataThongTinThue[2].totalMoney = noBaoHiem?.data?.totalMoney;
+    _dataThongTinThue[2].time = noBaoHiem?.data?.dateDebt ? moment(noBaoHiem?.data?.dateDebt).format("DD/MM/YYYY") : "";
     _dataThongTinThue[2].totalMonth = noBaoHiem?.data?.totalMonth;
     _dataThongTinThue[2].detailResult = noBaoHiem?.data?.debtDetail;
-
     setDataThongTinThue(_dataThongTinThue);
   };
+
+  const handleCallApi = async (apiFunction, successCallback) => {
+    try {
+      const response = await apiFunction();
+      if (response.code === 1008 || response.code === 1007) {
+        throw response.message;
+      }
+      if (successCallback) successCallback(response);
+      return response;
+    } catch (error) {
+      if (error?.response?.status === 401) {
+        setIsShowDialog(true);
+      }
+      toast.error(`${error}` || "Lỗi hệ thống, Vui lòng thử lại");
+    }
+  };
+
   const traCuu = async () => {
     if (!valueCQT?.cqtQuanLy) {
       toast.error("Vui lòng chọn Cơ quan thuế quản lý", {
@@ -461,15 +485,22 @@ const TraCuu: React.FC<RpaProps> = () => {
     resetData();
     setIsLoading(true);
     try {
-      const danhSachChiNhanh = await crawlApi.getDanhSachChiNhanh({
-        taxCode: valueNNT.taxCode ? valueNNT.taxCode : null,
-        cardId: valueNNT.cardId ? valueNNT.cardId : null,
-      });
-      setDataDanhSachChiNhanh(danhSachChiNhanh.data);
+      const danhSachChiNhanh = await handleCallApi(
+        () =>
+          crawlApi.getDanhSachChiNhanh({
+            taxCode: valueNNT.taxCode ? valueNNT.taxCode : null,
+            cardId: valueNNT.cardId ? valueNNT.cardId : null,
+          }),
+        (danhSachChiNhanh) => {
+          setDataDanhSachChiNhanh(danhSachChiNhanh.data);
+        }
+      );
+      // setDataDanhSachChiNhanh(danhSachChiNhanh.data);
 
       const thayDoiGiayPhepDKKD = await crawlApi.getThayDoiDKKD({ taxCode: valueNNT.taxCode, loaiThongBao: "AMEND" });
+
       setDataThayDoiGiayPhepDKKD(thayDoiGiayPhepDKKD.data);
-      const gpkdNgayCap = danhSachChiNhanh.data[0].thongTinChiTiet.gpkdngayCap.split(" - ")[1];
+      const gpkdNgayCap = danhSachChiNhanh?.data[0].thongTinChiTiet.gpkdngayCap.split(" - ")[1];
 
       const danhSachNguoiLienQuan = await crawlApi.getDanhSachNguoiLienQuan({
         taxCode: valueNNT.taxCode,
@@ -483,14 +514,12 @@ const TraCuu: React.FC<RpaProps> = () => {
         await getThongTinThue(gpkdNgayCap);
       }
     } catch (error) {
-      console.log("123", error);
-
+      console.log(error);
       setIsLoading(false);
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
-      } else {
-        toast.error("Lỗi hệ thống, Vui lòng thử lại");
       }
+      toast.error(`${error}` || "Lỗi hệ thống, Vui lòng thử lại");
     }
     setIsLoading(false);
   };
@@ -513,7 +542,7 @@ const TraCuu: React.FC<RpaProps> = () => {
             checked={searchType === "taxCode"}
           />
           <label htmlFor="taxCode" className="ml-2">
-            Tra cứu theo mã số thuế/Số đăng ký kinh doanh
+            Tra cứu theo mã số thuế
           </label>
         </div>
         <div>

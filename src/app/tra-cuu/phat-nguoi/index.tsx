@@ -5,8 +5,9 @@ import { DialogDemo } from "../components/LoginDialog";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import crawlApi from "../../../apis";
-import { FileUpload } from "primereact/fileupload";
 import { toast } from "react-toastify";
+import { Dialog } from "primereact/dialog";
+
 type PhatNguoiProps = {};
 
 const PhatNguoi: React.FC<PhatNguoiProps> = () => {
@@ -20,20 +21,20 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
       try {
         const response = await crawlApi.getUploadPhatNguoi(input);
         setResult(response.data);
+        setSelectedFile(null);
       } catch (error) {
         toast.error("Upload thất bại");
+        setSelectedFile(null);
       }
     }
     ref.current.clear();
-    setSelectedFile(null);
   };
-
   const [isShowDialog, setIsShowDialog] = useState(false);
 
   const [bienSo, setBienSo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState([]);
-
+  const [visible, setVisible] = useState(false);
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
@@ -57,33 +58,79 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
 
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
+      } else {
+        toast.error(error || `Lỗi hệ thống, Vui lòng thử lại`);
       }
     }
     setIsLoading(false);
   };
   const ref = useRef();
+
   return (
     <div className="min-w-fit w-1/2 mx-auto ">
       <DialogDemo isShowDialog={isShowDialog} />
-      <div className="mt-10 ">
-        <InputText
-          className="w-full"
-          onChange={(e) => setBienSo(e.target.value)}
-          placeholder="Không cần nhập các kí tự đặc biệt như . - "
-        />
-        <div className="text-[14px] text-gray-500 my-2 flex items-center">
-          <p>Nhập vào biển số xe hợp lệ, ví dụ: 20C11770. Các biển số xe cách nhau bằng dấu , hoặc</p>
-          <FileUpload
-            ref={ref}
-            url="#"
-            customUpload
-            uploadHandler={(e) => setSelectedFile(e.files[0])}
-            className="!text-sm !h-auto !p-2 !align-baseline inline"
-            chooseLabel={selectedFile?.name ? selectedFile.name : "Import excel"}
-            mode="basic"
-            accept="*"
-            auto
+      <Dialog
+        dismissableMask
+        header={"Thêm mới Import Excel"}
+        visible={visible}
+        position="top"
+        style={{ width: "30vw" }}
+        onHide={() => setVisible(false)}
+        footer={
+          <div>
+            <a href="/file-mau-phat-nguoi.xlsx">
+              <Button className="p-button-sm p-button-help mr-2" icon="pi pi-file-excel" label="Tải file mẫu"></Button>
+            </a>
+
+            <Button
+              label={isLoading ? "Đang tra cứu" : "Tra cứu"}
+              loading={isLoading}
+              onClick={async () => {
+                console.log(selectedFile);
+                if (selectedFile) {
+                  await handleSubmit();
+                  setVisible(false);
+                }
+              }}
+              className="p-button-sm mr-2"
+            />
+
+            <Button
+              onClick={() => {
+                setSelectedFile(null);
+                setVisible(false);
+              }}
+              icon="pi pi-times"
+              label="Đóng"
+              className="p-button-sm p-button-raised p-button-text p-button-plain"
+            ></Button>
+          </div>
+        }
+      >
+        <div>
+          <label htmlFor="upload">Tải lên tệp tin</label>
+          <input
+            onChange={(e) => setSelectedFile(e.target.files[0])}
+            id="upload"
+            className="border p-2 block w-full"
+            type="file"
           />
+        </div>
+      </Dialog>
+
+      <div className="mt-10 ">
+        <div className="flex gap-5">
+          <InputText
+            className="w-full"
+            onChange={(e) => setBienSo(e.target.value)}
+            placeholder="Nhập vào biển số xe hợp lệ, ví dụ: 20C11770. Các biển số xe cách nhau bằng dấu ,"
+          />
+          <Button onClick={() => setVisible(true)} className="!text-sm min-w-fit">
+            Import Excel
+          </Button>
+        </div>
+        <div className="text-[14px] text-gray-500 flex items-center">
+          <p className="text-red-500"> Không cần nhập các kí tự đặc biệt như . - </p>
         </div>
       </div>
       <Button
