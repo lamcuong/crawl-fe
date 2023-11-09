@@ -44,8 +44,8 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
       } else {
         for (const plate of list) {
           const data = await crawlApi.getPhatNguoi({ licenseNumber: plate });
-          if (data.data.violations !== null) {
-            danhSachBien.push(data.data.violations[0]);
+          if (data.data.length) {
+            danhSachBien.push(...data.data);
           }
         }
         setResult(danhSachBien);
@@ -61,7 +61,6 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
     }
     setIsLoading(false);
   };
-
   const ref = useRef();
   return (
     <div className="min-w-fit w-1/2 mx-auto ">
