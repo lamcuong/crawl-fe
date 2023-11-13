@@ -7,7 +7,7 @@ function App() {
       <header className="App-header">
         <Header />
       </header>
-      <ToastContainer autoClose={2000} position="top-center" />
+      <ToastContainer autoClose={2000} pauseOnFocusLoss={false} position="top-center" />
       <div className="px-2 lg:px-5 mb-5">
         <Outlet />
       </div>

@@ -23,7 +23,7 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
         setResult(response.data);
         setSelectedFile(null);
       } catch (error) {
-        toast.error("Upload thất bại");
+        toast.error(error || "Upload thất bại");
         setSelectedFile(null);
       }
     }
@@ -65,7 +65,6 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
     setIsLoading(false);
   };
   const ref = useRef();
-
   return (
     <div className="min-w-fit w-1/2 mx-auto ">
       <DialogDemo isShowDialog={isShowDialog} />
@@ -81,12 +80,10 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
             <a href="/file-mau-phat-nguoi.xlsx">
               <Button className="p-button-sm p-button-help mr-2" icon="pi pi-file-excel" label="Tải file mẫu"></Button>
             </a>
-
             <Button
               label={isLoading ? "Đang tra cứu" : "Tra cứu"}
               loading={isLoading}
               onClick={async () => {
-                console.log(selectedFile);
                 if (selectedFile) {
                   await handleSubmit();
                   setVisible(false);
@@ -94,7 +91,6 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
               }}
               className="p-button-sm mr-2"
             />
-
             <Button
               onClick={() => {
                 setSelectedFile(null);
@@ -141,57 +137,55 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
         className="!mt-3 w-auto !mx-auto !flex"
       ></Button>
       <div>
-        {result.length ? (
-          result.map((item) => {
-            return (
-              <div className="border-b border-black py-5">
-                <div className="flex my-3  flex-wrap">
-                  <div className="text-md font-[600] basis-1/3">Biển kiểm soát</div>
-                  <div className="flex-1 text-md">{item.licenseNumber}</div>
-                </div>
-                <div className="flex my-3  flex-wrap">
-                  <div className="text-md font-[600] basis-1/3">Màu biển</div>
-                  <div className="flex-1 text-md">{item.specs}</div>
-                </div>
-                <div className="flex my-3  flex-wrap">
-                  <div className="text-md font-[600] basis-1/3">Loại phương tiện</div>
-                  <div className="flex-1 text-md">{item.vehicleType}</div>
-                </div>
-                <div className="flex my-3  flex-wrap">
-                  <div className="text-md font-[600] basis-1/3">Thời gian vi phạm</div>
-                  <div className="flex-1 text-md">{item.violationTime}</div>
-                </div>
-                <div className="flex my-3  flex-wrap">
-                  <div className="text-md font-[600] basis-1/3">Địa điểm vi phạm</div>
-                  <div className="flex-1 text-md">{item.violationAddress}</div>
-                </div>
-                <div className="flex my-3  flex-wrap">
-                  <div className="text-md font-[600] basis-1/3">Hành vi vi phạm</div>
-                  <div className="flex-1 text-md">{item.behavior}</div>
-                </div>
-                <div className="flex my-3  flex-wrap">
-                  <div className="text-md font-[600] basis-1/3">Trạng thái</div>
-                  <div className="flex-1 text-md ">
-                    <span className="text-danger badge">{item.status}</span>
+        {result.length
+          ? result.map((item) => {
+              return (
+                <div className="border-b border-black py-5">
+                  <div className="flex my-3  flex-wrap">
+                    <div className="text-md font-[600] basis-1/3">Biển kiểm soát</div>
+                    <div className="flex-1 text-md">{item.licenseNumber}</div>
+                  </div>
+                  <div className="flex my-3  flex-wrap">
+                    <div className="text-md font-[600] basis-1/3">Màu biển</div>
+                    <div className="flex-1 text-md">{item.specs}</div>
+                  </div>
+                  <div className="flex my-3  flex-wrap">
+                    <div className="text-md font-[600] basis-1/3">Loại phương tiện</div>
+                    <div className="flex-1 text-md">{item.vehicleType}</div>
+                  </div>
+                  <div className="flex my-3  flex-wrap">
+                    <div className="text-md font-[600] basis-1/3">Thời gian vi phạm</div>
+                    <div className="flex-1 text-md">{item.violationTime}</div>
+                  </div>
+                  <div className="flex my-3  flex-wrap">
+                    <div className="text-md font-[600] basis-1/3">Địa điểm vi phạm</div>
+                    <div className="flex-1 text-md">{item.violationAddress}</div>
+                  </div>
+                  <div className="flex my-3  flex-wrap">
+                    <div className="text-md font-[600] basis-1/3">Hành vi vi phạm</div>
+                    <div className="flex-1 text-md">{item.behavior}</div>
+                  </div>
+                  <div className="flex my-3  flex-wrap">
+                    <div className="text-md font-[600] basis-1/3">Trạng thái</div>
+                    <div className="flex-1 text-md ">
+                      <span className="text-danger badge">{item.status}</span>
+                    </div>
+                  </div>
+                  <div className="flex my-3  flex-wrap">
+                    <div className="text-md font-[600] basis-1/3">Đơn vị phát hiện vi phạm</div>
+                    <div className="flex-1 text-md">{item.provider}</div>
+                  </div>
+
+                  <div className="flex my-3  flex-wrap">
+                    <div className="text-md font-[600]">Nơi giải quyết vụ việc</div>
+                  </div>
+                  <div className="flex my-3 flex-wrap">
+                    <div className="text-md whitespace-pre-wrap">{item.contactAddress}</div>
                   </div>
                 </div>
-                <div className="flex my-3  flex-wrap">
-                  <div className="text-md font-[600] basis-1/3">Đơn vị phát hiện vi phạm</div>
-                  <div className="flex-1 text-md">{item.provider}</div>
-                </div>
-
-                <div className="flex my-3  flex-wrap">
-                  <div className="text-md font-[600]">Nơi giải quyết vụ việc</div>
-                </div>
-                <div className="flex my-3 flex-wrap">
-                  <div className="text-md whitespace-pre-wrap">{item.contactAddress}</div>
-                </div>
-              </div>
-            );
-          })
-        ) : (
-          <p className="text-center text-md font-semibold text-[#ff0000] mt-5">Không tìm thấy kết quả!</p>
-        )}
+              );
+            })
+          : null}
       </div>
     </div>
   );

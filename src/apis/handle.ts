@@ -6,7 +6,6 @@ export const handleApiRequestWithMessage = async (func: any) => {
     }
     return response.data;
   } catch (error) {
-    console.log("errr", error);
     throw error;
   }
 };

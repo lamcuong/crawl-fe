@@ -35,7 +35,7 @@ const Login: React.FC<LoginProps> = () => {
   };
   return (
     <form className=" w-[90%] lg:w-1/4 flex flex-col gap-4 mx-auto mt-10" onSubmit={handleSubmit}>
-      <ToastContainer autoClose={1000} position="top-center" />
+      <ToastContainer pauseOnFocusLoss={false} autoClose={1000} position="top-center" />
 
       <InputText
         placeholder="Tài khoản"

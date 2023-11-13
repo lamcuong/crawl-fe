@@ -26,7 +26,7 @@ const login = (input: any) => {
   );
 };
 const getDanhSachChiNhanh = (input: any) => {
-  return handleApiRequestWithMessage(() => _axios.post(apiDanhSachChiNhanh, input));
+  return handleApiRequest(() => _axios.post(apiDanhSachChiNhanh, input));
 };
 const getDanhSachNguoiLienQuan = (input: any) => {
   return handleApiRequest(() => _axios.post(apiDanhSachNguoiLienQuan, input));

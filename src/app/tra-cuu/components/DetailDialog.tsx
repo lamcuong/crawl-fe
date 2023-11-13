@@ -1,4 +1,5 @@
 //@ts-nocheck
+import moment from "moment";
 import { Dialog } from "primereact/dialog";
 import React from "react";
 
@@ -8,10 +9,15 @@ type DetailDialogProps = {
   content: any;
   dialogName: string;
 };
+
 const noBaoHiemFields = [
   {
-    field: "taxCode",
-    header: "Mã số thuế",
+    field: "dateDebt",
+    header: "Khoảng thời gian phát sinh",
+  },
+  {
+    field: "code",
+    header: "Mã đơn vị",
   },
   {
     field: "name",
@@ -21,6 +27,7 @@ const noBaoHiemFields = [
     field: "address",
     header: "Địa chỉ trụ sở",
   },
+
   {
     field: "monthDebt",
     header: "Số tháng nợ",
@@ -31,7 +38,7 @@ const noBaoHiemFields = [
   },
   {
     field: "numberWorkers",
-    header: "Số nhân viên",
+    header: "Số nhân viên bị khoá thẻ",
   },
   {
     field: "note",
@@ -61,6 +68,7 @@ const cuongCheThueFields = [
     header: "Trạng thái",
   },
 ];
+
 const ruiRoThue = [
   {
     field: "tenToChucCaNhan",
@@ -100,6 +108,7 @@ const DetailDialog: React.FC<DetailDialogProps> = ({ visible, setVisible, conten
         break;
       case "Nợ bảo hiểm xã hội hiện hữu":
         field = noBaoHiemFields;
+        break;
     }
 
     return content?.map((value) => {
@@ -110,7 +119,11 @@ const DetailDialog: React.FC<DetailDialogProps> = ({ visible, setVisible, conten
               <div className="flex">
                 <p className="basis-1/3 font-semibold">{item.header}</p>
                 <p className="flex-1">
-                  {typeof value[item.field] === "number" ? value[item.field].toLocaleString() : value[item.field]}
+                  {typeof value[item.field] === "number"
+                    ? value[item.field].toLocaleString()
+                    : moment(value[item.field], moment.ISO_8601).isValid()
+                    ? moment(value[item.field]).format("DD/MM/YYYY")
+                    : value[item.field]}
                 </p>
               </div>
             );
