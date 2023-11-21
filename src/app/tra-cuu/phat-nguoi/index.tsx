@@ -23,7 +23,7 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
         setResult(response.data);
         setSelectedFile(null);
       } catch (error) {
-        toast.error(error || "Upload thất bại");
+        toast.error(error || error?.response?.data.message || "Upload thất bại");
         setSelectedFile(null);
       }
     }
@@ -114,7 +114,7 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
         </div>
       </Dialog>
 
-      <div className="mt-10 ">
+      <div>
         <div className="flex gap-5">
           <InputText
             className="w-full"

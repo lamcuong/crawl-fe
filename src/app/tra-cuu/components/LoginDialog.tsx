@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 export function DialogDemo(props: any) {
   const navigate = useNavigate();
   return (
-    <div>
       <Dialog
         closable={false}
         dismissableMask
@@ -23,6 +22,5 @@ export function DialogDemo(props: any) {
           </div>
         </p>
       </Dialog>
-    </div>
   );
 }

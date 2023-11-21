@@ -98,3 +98,6 @@ code {
 table{
   font-family: 'Times New Roman', Times, serif !important;
 }
+.ant-table-cell {
+  padding: 10px 10px !important;
+}

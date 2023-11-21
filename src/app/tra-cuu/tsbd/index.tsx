@@ -57,7 +57,7 @@ const TaiSan: React.FC<TaiSanProps> = () => {
     setSearchType(e.target.value);
   };
   return (
-    <div className="mt-9 mx-auto flex flex-col">
+    <div className="mx-auto flex flex-col">
       <DialogDemo isShowDialog={isShowDialog} />
       <div className="flex align-items-center justify-center gap-5">
         <div>

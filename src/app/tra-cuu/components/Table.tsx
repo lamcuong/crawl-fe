@@ -32,10 +32,9 @@ const TableComponent: React.FC<DataProps> = ({ data, columns, title, className, 
     <div className={className}>
       <p className="font-bold">{title}</p>
       <Table
-        scroll={{ x: "max-content" }}
         pagination={pagination === false ? false : {}}
         className="whitespace-break-spaces"
-        size={`${isWideScreen ? "large" : "small"}`}
+        size="small"
         bordered
         columns={columns}
         dataSource={data}

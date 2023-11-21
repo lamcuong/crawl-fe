@@ -559,9 +559,8 @@ const TraCuu: React.FC<RpaProps> = () => {
     setValueNTT(initialValue);
     setSearchType(e.target.value);
   };
-
   return (
-    <div className="flex gap-10 justify-center  flex-col">
+    <div className="flex gap-10 justify-center flex-col">
       <DetailDialog content={detailResult} dialogName={dialogName} visible={visible} setVisible={setVisible} />
       <DialogDemo isShowDialog={isShowDialog} setIsShowDialog={setIsShowDialog} />
       <div className="flex align-items-center justify-center gap-5">
@@ -590,7 +589,7 @@ const TraCuu: React.FC<RpaProps> = () => {
           </label>
         </div>
       </div>
-      <div className="w-1/2 lg:w-1/3 flex flex-col mx-auto gap-2">
+      <div className="w-1/2 lg:w-2/5 flex flex-col mx-auto gap-2">
         {searchType === "taxCode" ? (
           <>
             <div className="flex gap-2">
@@ -603,21 +602,23 @@ const TraCuu: React.FC<RpaProps> = () => {
                     cqtTinh: e.value,
                   }));
                 }}
+                filter={true}
                 optionLabel="name"
                 placeholder="Chọn cơ quan thuế"
-                className="w-full md:w-14rem overflow-hidden"
+                className="w-full overflow-hidden"
               />
               <Dropdown
                 value={valueCQT.cqtQuanLy}
+                options={cqtQuanLyOptions}
                 onChange={(e) =>
                   setValueCQT((prevState) => ({
                     ...prevState,
                     cqtQuanLy: e.value,
                   }))
                 }
-                options={cqtQuanLyOptions}
                 optionLabel="name"
-                className={`w-full md:w-14rem overflow-hidden `}
+                filter={true}
+                className="w-full overflow-hidden"
               />
             </div>
             <InputText

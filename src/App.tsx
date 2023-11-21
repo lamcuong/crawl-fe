@@ -8,7 +8,7 @@ function App() {
         <Header />
       </header>
       <ToastContainer autoClose={2000} pauseOnFocusLoss={false} position="top-center" />
-      <div className="px-2 lg:px-5 mb-5">
+      <div className="px-2 lg:px-5 mb-5 mt-10">
         <Outlet />
       </div>
     </div>

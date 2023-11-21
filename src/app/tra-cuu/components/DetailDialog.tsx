@@ -133,7 +133,6 @@ const DetailDialog: React.FC<DetailDialogProps> = ({ visible, setVisible, conten
     });
   };
   return (
-    <div>
       <Dialog
         dismissableMask
         header={dialogName}
@@ -143,7 +142,6 @@ const DetailDialog: React.FC<DetailDialogProps> = ({ visible, setVisible, conten
       >
         {render()}
       </Dialog>
-    </div>
   );
 };
 
