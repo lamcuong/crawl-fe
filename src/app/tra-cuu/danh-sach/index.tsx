@@ -451,8 +451,10 @@ const TraCuu: React.FC<RpaProps> = () => {
       _dataThongTinThue[1].result = ruiRoThue.data?.length ? "Có" : "Không";
       _dataThongTinThue[1].time = ruiRoThue.data?.[0]?.ngayQuyetDinh || "";
       _dataThongTinThue[1].detailResult = ruiRoThue.data;
+    }else{
+      _dataThongTinThue[1].result = "N/A"
     }
-
+  
     const noBaoHiem = await handleCallApi(() =>
       crawlApi.getNoBaoHiem({
         taxCode: valueNNT.taxCode,
@@ -483,12 +485,12 @@ const TraCuu: React.FC<RpaProps> = () => {
   };
   const search = async () => {
     setIsLoading(true);
-    if (!valueCQT?.cqtQuanLy) {
-      toast.error("Vui lòng chọn Cơ quan thuế quản lý", {
-        autoClose: 500,
-      });
-      return;
-    }
+    // if (!valueCQT?.cqtQuanLy) {
+    //   toast.error("Vui lòng chọn Cơ quan thuế quản lý", {
+    //     autoClose: 500,
+    //   });
+    //   return;
+    // }
     try {
       // danhSachChiNhanh
       await handleCallApi(
