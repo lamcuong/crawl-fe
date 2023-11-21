@@ -49,7 +49,7 @@ const getCuongCheThue = (input: any) => {
 const getRuiRoThue = (input: any) => {
   return handleApiRequest(() => _axios.post(apiRuiRoThue, input));
 };
-const getDanhSachCQT = (input: any) => {
+const getDanhSachCQT = (input?: any) => {
   const cqt = input ? `?cap=cc&byma=true&cqt=${input}` : "";
   return fetch(`/listdmcqt.html${cqt}`).then((r) => r.json().then((data) => data));
 };

@@ -362,8 +362,8 @@ const TraCuu: React.FC<RpaProps> = () => {
     parentTaxCode: "",
   };
   const defaultValueCQT = {
-    cqtTinh: "",
-    cqtQuanLy: "",
+    cqtTinh: { code: "", name: "" },
+    cqtQuanLy: { code: "", name: "" },
   };
   const [error, setError] = useState(null);
   const [valueCQT, setValueCQT] = useState(defaultValueCQT);
@@ -451,10 +451,10 @@ const TraCuu: React.FC<RpaProps> = () => {
       _dataThongTinThue[1].result = ruiRoThue.data?.length ? "Có" : "Không";
       _dataThongTinThue[1].time = ruiRoThue.data?.[0]?.ngayQuyetDinh || "";
       _dataThongTinThue[1].detailResult = ruiRoThue.data;
-    }else{
-      _dataThongTinThue[1].result = "N/A"
+    } else {
+      _dataThongTinThue[1].result = "N/A";
     }
-  
+
     const noBaoHiem = await handleCallApi(() =>
       crawlApi.getNoBaoHiem({
         taxCode: valueNNT.taxCode,
@@ -477,11 +477,7 @@ const TraCuu: React.FC<RpaProps> = () => {
       }
       if (successCallback) successCallback(response);
       return response;
-    } catch (error) {
-      if (error?.response?.status === 401) {
-        setIsShowDialog(true);
-      }
-    }
+    } catch (error) {}
   };
   const search = async () => {
     setIsLoading(true);
