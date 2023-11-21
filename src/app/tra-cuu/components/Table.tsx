@@ -1,15 +1,9 @@
 import { Table } from "antd";
-import type { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
 
-interface DataType {
-  tenNNT: string;
-  MST: number;
-  ghiChu: string;
-}
 type DataProps = {
-  data: DataType[];
-  columns: ColumnsType<DataType>;
+  data: any;
+  columns: any;
   title: string;
   className?: string;
   pagination?: boolean;

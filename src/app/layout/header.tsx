@@ -45,6 +45,17 @@ const Header = () => {
               label="Phạt nguội"
             ></Button>
           </li>
+          <li>
+            <Button
+              className={`${path === "/tra-cuu/thue-va-nghia-vu-khac" && activeClass} !text-left w-full !rounded-none`}
+              type="button"
+              onClick={() => {
+                setVisible(false);
+                navigate("/tra-cuu/thue-va-nghia-vu-khac");
+              }}
+              label="Thuế và nghĩa vụ khác"
+            ></Button>
+          </li>
         </ul>
       </Sidebar>
       <div className="bg-neutral-200 p-5 ">
@@ -81,6 +92,17 @@ const Header = () => {
                 navigate("/tra-cuu/phat-nguoi");
               }}
               label="Phạt nguội"
+            ></Button>
+          </li>
+          <li>
+            <Button
+              className={path === "/tra-cuu/thue-va-nghia-vu-khac" ? activeClass : ""}
+              type="button"
+              onClick={() => {
+                setVisible(false);
+                navigate("/tra-cuu/thue-va-nghia-vu-khac");
+              }}
+              label="Thuế và nghĩa vụ khác"
             ></Button>
           </li>
         </ul>
