@@ -53,7 +53,7 @@ const Header = () => {
                 setVisible(false);
                 navigate("/tra-cuu/thue-va-nghia-vu-khac");
               }}
-              label="Thuế và nghĩa vụ khác"
+              label="Thuế & Nghĩa vụ khác"
             ></Button>
           </li>
         </ul>
@@ -102,7 +102,7 @@ const Header = () => {
                 setVisible(false);
                 navigate("/tra-cuu/thue-va-nghia-vu-khac");
               }}
-              label="Thuế và nghĩa vụ khác"
+              label="Thuế & Nghĩa vụ khác"
             ></Button>
           </li>
         </ul>
