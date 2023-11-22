@@ -130,6 +130,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
   const [cqtTinhOptions, setCqtTinhOptions] = useState([]);
   const [cqtQuanLyOptions, setCqtQuanLyOptions] = useState([]);
   const [error, setError] = useState(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
     crawlApi.getDanhSachCQT().then((r) => {
@@ -161,10 +162,13 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
   }, [cqtQuanLyOptions]);
 
   useEffect(() => {
-    if (error && !isLoading) {
+    if (error && isSubmitted && !isLoading) {
       toast.error(error);
     }
-  }, [error, isLoading]);
+    if(isSubmitted && !isLoading && !error){
+      toast.success("Tra cứu thành công")
+    }
+  }, [error, isLoading, isSubmitted]);
   const getThongTinThue = async () => {
     const _dataThongTinThue = [...dataThongTinThue];
 
@@ -180,7 +184,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
       cuongCheThue.data?.taxsEnforceResult[cuongCheThue.data?.taxsEnforceResult?.length - 1]?.ngayThongBao || "";
     _dataThongTinThue[0].detailResult = cuongCheThue.data?.taxsEnforceResult;
 
-    if (valueCQT?.cqtTinh?.code) {
+    if (valueCQT?.cqtTinh?.code && valueCQT?.cqtTinh?.code !== "*") {
       const ruiRoThue = await handleCallApi(() =>
         crawlApi.getRuiRoThue({
           taxCode,
@@ -225,6 +229,8 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
   const resetData = () => {
     setDataThongTinThue(dataThongTinThueDefault);
     setError(null)
+    setIsSubmitted(false)
+
   };
   const handleSubmit = async () => {
     resetData();
@@ -234,7 +240,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
     } catch (error) {
       setIsLoading(false);
     }
-
+    setIsSubmitted(true)
     setIsLoading(false);
   };
   return (
@@ -296,7 +302,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
           className="col-span-full"
           title="Thông Tin Về Thuế & Nghĩa Vụ Khác"
           columns={thongTinVeThue}
-          data={dataThongTinThue}
+          data={isSubmitted && !error ? dataThongTinThue : dataThongTinThueDefault}
         />
       </div>
     </div>

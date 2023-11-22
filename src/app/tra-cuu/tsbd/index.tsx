@@ -36,6 +36,7 @@ const TaiSan: React.FC<TaiSanProps> = () => {
       });
       setData(data.data.html);
       setIsLoading(false);
+      toast.success("Tra cứu thành công")
     } catch (error) {
       if (error?.response?.status === 401) {
         setIsShowDialog(true);

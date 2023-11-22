@@ -2,7 +2,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { LoadingService } from "../../../utils/LoadingService";
 import { InputText } from "primereact/inputtext";
 import TableComponent from "../components/Table";
 import { Button } from "primereact/button";
@@ -250,6 +249,7 @@ const TraCuu: React.FC<RpaProps> = () => {
   const [visible, setVisible] = useState(false);
   const [detailResult, setDetailResult] = useState(null);
   const [dialogName, setDialogName] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const dataThongTinThueDefault = [
     {
       content: "Cưỡng chế thuế",
@@ -405,14 +405,6 @@ const TraCuu: React.FC<RpaProps> = () => {
   const handleChangeNNT = (name, newValue) => {
     setValueNTT({ ...valueNNT, [name]: newValue });
   };
-  const getDanhSachCongTyLienQuan = async () => {
-    await handleCallApi(
-      () => crawlApi.getDanhSachCongTyLienQuan({ taxCode: valueNNT.taxCode }),
-      (congTyLienQuan) => {
-        setDataDanhSachCongTyLienQuan(congTyLienQuan.data);
-      }
-    );
-  };
   const resetData = () => {
     setDataDanhSachChiNhanh([]);
     setDataDanhSachCongTyLienQuan([]);
@@ -420,6 +412,7 @@ const TraCuu: React.FC<RpaProps> = () => {
     setDataThayDoiGiayPhepDKKD([]);
     setDataThongTinThue(dataThongTinThueDefault);
     setError(null);
+    setIsSubmitted(false)
   };
   const getThongTinThue = async () => {
     const _dataThongTinThue = [...dataThongTinThue];
@@ -435,8 +428,7 @@ const TraCuu: React.FC<RpaProps> = () => {
     _dataThongTinThue[0].time =
       cuongCheThue.data?.taxsEnforceResult[cuongCheThue.data?.taxsEnforceResult?.length - 1]?.ngayThongBao || "";
     _dataThongTinThue[0].detailResult = cuongCheThue.data?.taxsEnforceResult;
-
-    if (valueCQT?.cqtTinh?.code) {
+    if (valueCQT?.cqtTinh?.code && valueCQT?.cqtTinh?.code !== "*") {
       const ruiRoThue = await handleCallApi(() =>
         crawlApi.getRuiRoThue({
           taxCode: valueNNT.taxCode,
@@ -514,8 +506,13 @@ const TraCuu: React.FC<RpaProps> = () => {
           setDataDanhSachNguoiLienQuan(danhSachNguoiLienQuan.data);
         }
       );
-
-      await getDanhSachCongTyLienQuan();
+      // danhSachCongTyLienQuan
+      await handleCallApi(
+        () => crawlApi.getDanhSachCongTyLienQuan({ taxCode: valueNNT.taxCode }),
+        (congTyLienQuan) => {
+          setDataDanhSachCongTyLienQuan(congTyLienQuan.data);
+        }
+      );
       await getThongTinThue();
     } catch (error) {
       setIsLoading(false);
@@ -523,6 +520,7 @@ const TraCuu: React.FC<RpaProps> = () => {
         setIsShowDialog(true);
       }
     }
+    setIsSubmitted(true)
   };
   const handleSubmit = async () => {
     resetData();
@@ -545,10 +543,14 @@ const TraCuu: React.FC<RpaProps> = () => {
     setIsLoading(false);
   };
   useEffect(() => {
-    if (error && !isLoading) {
+    if (error && isSubmitted && !isLoading) {
       toast.error(error);
     }
-  }, [error, isLoading]);
+    if(isSubmitted && !isLoading && !error){
+      toast.success("Tra cứu thành công")
+    }
+  }, [error, isLoading, isSubmitted]);
+
   const handleSearchTypeChange = (e) => {
     setValueNTT(initialValue);
     setSearchType(e.target.value);
@@ -651,26 +653,30 @@ const TraCuu: React.FC<RpaProps> = () => {
           className="col-span-full"
           title="Thông Tin Về Thuế & Nghĩa Vụ Khác"
           columns={thongTinVeThue}
-          data={dataThongTinThue}
+          data={isSubmitted && !error ? dataThongTinThue : dataThongTinThueDefault}
         />
-        <TableComponent title="Thay đổi giấy phép ĐKKD" columns={thayDoiGiayPhepDKKD} data={dataThayDoiGiayPhepDKKD} />
+        <TableComponent
+          title="Thay đổi giấy phép ĐKKD"
+          columns={thayDoiGiayPhepDKKD}
+          data={isSubmitted && !error ? dataThayDoiGiayPhepDKKD : null}
+        />
         <TableComponent
           title="Danh sách người liên quan"
           columns={danhSachNguoiLienQuan}
-          data={dataDanhSachNguoiLienQuan}
+          data={isSubmitted && !error ? dataDanhSachNguoiLienQuan : null}
         />
 
         <TableComponent
           className="col-span-full "
           title="Danh sách Công ty liên quan của Người Liên Quan"
           columns={danhSachCongTyLienQuan}
-          data={dataDanhSachCongTyLienQuan}
+          data={isSubmitted && !error ? dataDanhSachCongTyLienQuan : null}
         />
         <TableComponent
           className="col-span-full"
           title="Danh sách chi nhánh"
           columns={danhSachChiNhanh}
-          data={dataDanhSachChiNhanh}
+          data={isSubmitted && !error ? dataDanhSachChiNhanh : null}
         />
       </div>
     </div>
