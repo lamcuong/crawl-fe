@@ -23,11 +23,11 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
         setResult(response.data);
         setSelectedFile(null);
       } catch (error) {
-        toast.error(error || error?.response?.data.message || "Upload thất bại");
         setSelectedFile(null);
+        throw error;
       }
     }
-    ref.current.clear();
+    ref.current?.clear();
   };
   const [isShowDialog, setIsShowDialog] = useState(false);
 
@@ -53,13 +53,12 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
       }
 
       setIsLoading(false);
+      toast.success("Tra cứu thành công");
     } catch (error) {
-      setIsLoading(false);
-
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
       } else {
-        toast.error(error || `Lỗi hệ thống, Vui lòng thử lại`);
+        toast.error(error?.response?.data.message || error || `Lỗi hệ thống, Vui lòng thử lại`);
       }
     }
     setIsLoading(false);
