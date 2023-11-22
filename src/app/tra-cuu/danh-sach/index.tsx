@@ -314,32 +314,28 @@ const TraCuu: React.FC<RpaProps> = () => {
       key: "time",
       dataIndex: "time",
       align: "left",
+      render: (text, record) => (record.result === "Có" ? <p>{text}</p> : null),
     },
     {
       title: "Số Tiền Nợ",
       key: "totalMoney",
       dataIndex: "totalMoney",
       align: "left",
-      render: (text) => <p>{text ? text.toLocaleString() : ""}</p>,
+      render: (text, record) => <p>{text && record.result === "Có" ? text.toLocaleString() : ""}</p>,
     },
     {
       title: "Số Tháng Nợ",
       key: "totalMonth",
       dataIndex: "totalMonth",
       align: "left",
+      render: (text, record) => (record.result === "Có" ? <p>{text}</p> : null),
     },
-    // {
-    //   title: "Kết Quả Lịch Sử Trong Vòng 1 Năm",
-    //   key: "historyResult",
-    //   dataIndex: "historyResult",
-    //   align: "left",
-    // },
     {
       title: "Kết Quả Chi Tiết",
       key: "detailResult",
       dataIndex: "detailResult",
       render: (text, record, index) => {
-        return record.result === "Có" ? (
+        return record.detailResult?.length ? (
           <div className="text-center">
             <Button
               onClick={() => {
@@ -460,8 +456,8 @@ const TraCuu: React.FC<RpaProps> = () => {
         taxCode: valueNNT.taxCode,
       })
     );
-
-    _dataThongTinThue[2].result = noBaoHiem?.data?.debtDetail?.length ? "Có" : "Không";
+    const previousMonth = moment().month() - 1;
+    _dataThongTinThue[2].result = moment(noBaoHiem?.data?.dateDebt).month() === previousMonth ? "Có" : "Không";
     _dataThongTinThue[2].totalMoney = noBaoHiem?.data?.totalMoney;
     _dataThongTinThue[2].time = noBaoHiem?.data?.dateDebt ? moment(noBaoHiem?.data?.dateDebt).format("DD/MM/YYYY") : "";
     _dataThongTinThue[2].totalMonth = noBaoHiem?.data?.totalMonth;

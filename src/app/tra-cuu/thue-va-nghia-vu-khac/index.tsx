@@ -1,3 +1,4 @@
+//@ts-nocheck
 import React, { useEffect, useState } from "react";
 import { DialogDemo } from "../components/LoginDialog";
 import DetailDialog from "../components/DetailDialog";
@@ -55,7 +56,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
       title: "STT",
       dataIndex: "stt",
       key: "stt",
-      render: (text: any, record: any, index: any) => <p>{index + 1}</p>,
+      render: (text, record, index) => <p>{index + 1}</p>,
       align: "left",
     },
     {
@@ -69,39 +70,35 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
       dataIndex: "result",
       key: "result",
       align: "left",
-      render: (text: any) => <p className="break-all">{text}</p>,
+      render: (text) => <p className="break-all">{text}</p>,
     },
     {
       title: "Khoảng Thời Gian Phát Sinh",
       key: "time",
       dataIndex: "time",
       align: "left",
+      render: (text, record) => (record.result === "Có" ? <p>{text}</p> : null),
     },
     {
       title: "Số Tiền Nợ",
       key: "totalMoney",
       dataIndex: "totalMoney",
       align: "left",
-      render: (text: any) => <p>{text ? text.toLocaleString() : ""}</p>,
+      render: (text, record) => <p>{text && record.result === "Có" ? text.toLocaleString() : ""}</p>,
     },
     {
       title: "Số Tháng Nợ",
       key: "totalMonth",
       dataIndex: "totalMonth",
       align: "left",
+      render: (text, record) => (record.result === "Có" ? <p>{text}</p> : null),
     },
-    // {
-    //   title: "Kết Quả Lịch Sử Trong Vòng 1 Năm",
-    //   key: "historyResult",
-    //   dataIndex: "historyResult",
-    //   align: "left",
-    // },
     {
       title: "Kết Quả Chi Tiết",
       key: "detailResult",
       dataIndex: "detailResult",
-      render: (text: any, record: any, index: any) => {
-        return record.result === "Có" ? (
+      render: (text, record, index) => {
+        return record.detailResult?.length ? (
           <div className="text-center">
             <Button
               onClick={() => {
@@ -136,8 +133,8 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
 
   useEffect(() => {
     crawlApi.getDanhSachCQT().then((r) => {
-      const options: any = [{ code: "*", name: "Chọn cơ quan thuế" }];
-      r?.listCqts?.forEach((item: any) => {
+      const options = [{ code: "*", name: "Chọn cơ quan thuế" }];
+      r?.listCqts?.forEach((item) => {
         if (item?.cap_cqt === "C") {
           options.push({ code: item.ma, name: item.ten });
         }
@@ -147,9 +144,9 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
   }, []);
   useEffect(() => {
     if (valueCQT.cqtTinh.code) {
-      crawlApi.getDanhSachCQT(valueCQT.cqtTinh.code).then((r) => {
-        const options: any = [];
-        r?.listCqts?.forEach((item: any) => {
+      crawlApi.getDanhSachCQT(valueCQT.cqtTinh.code).then((res) => {
+        const options = [];
+        res?.listCqts?.forEach((item) => {
           options.push({ code: item.ma, name: item.ten });
         });
         setCqtQuanLyOptions(options);
@@ -166,7 +163,6 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
   useEffect(() => {
     if (error && !isLoading) {
       toast.error(error);
-      console.log("123", error);
     }
   }, [error, isLoading]);
   const getThongTinThue = async () => {
@@ -205,7 +201,8 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
       })
     );
 
-    _dataThongTinThue[2].result = noBaoHiem?.data?.debtDetail?.length ? "Có" : "Không";
+    const previousMonth = moment().month() - 1
+    _dataThongTinThue[2].result = moment(noBaoHiem?.data?.dateDebt).month() === previousMonth ? "Có" : "Không"
     _dataThongTinThue[2].totalMoney = noBaoHiem?.data?.totalMoney;
     _dataThongTinThue[2].time = noBaoHiem?.data?.dateDebt ? moment(noBaoHiem?.data?.dateDebt).format("DD/MM/YYYY") : "";
     _dataThongTinThue[2].totalMonth = noBaoHiem?.data?.totalMonth;
@@ -213,7 +210,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
     setDataThongTinThue(_dataThongTinThue);
   };
 
-  const handleCallApi = async (apiFunction: any, successCallback?: any) => {
+  const handleCallApi = async (apiFunction, successCallback) => {
     try {
       const response = await apiFunction();
       if (response.code === 1008 || response.code === 1007) {
@@ -227,6 +224,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
   };
   const resetData = () => {
     setDataThongTinThue(dataThongTinThueDefault);
+    setError(null)
   };
   const handleSubmit = async () => {
     resetData();
