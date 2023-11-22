@@ -76,32 +76,28 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
       key: "time",
       dataIndex: "time",
       align: "left",
+      render: (text: any, record: any) => (record.result === "Có" ? <p>{text}</p> : null),
     },
     {
       title: "Số Tiền Nợ",
       key: "totalMoney",
       dataIndex: "totalMoney",
       align: "left",
-      render: (text: any) => <p>{text ? text.toLocaleString() : ""}</p>,
+      render: (text: any, record: any) => <p>{text && record.result === "Có" ? text.toLocaleString() : ""}</p>,
     },
     {
       title: "Số Tháng Nợ",
       key: "totalMonth",
       dataIndex: "totalMonth",
       align: "left",
+      render: (text: any, record: any) => (record.result === "Có" ? <p>{text}</p> : null),
     },
-    // {
-    //   title: "Kết Quả Lịch Sử Trong Vòng 1 Năm",
-    //   key: "historyResult",
-    //   dataIndex: "historyResult",
-    //   align: "left",
-    // },
     {
       title: "Kết Quả Chi Tiết",
       key: "detailResult",
       dataIndex: "detailResult",
       render: (text: any, record: any, index: any) => {
-        return record.result === "Có" ? (
+        return record.detailResult?.length ? (
           <div className="text-center">
             <Button
               onClick={() => {
@@ -228,6 +224,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
   };
   const resetData = () => {
     setDataThongTinThue(dataThongTinThueDefault);
+    setError(null)
   };
   const handleSubmit = async () => {
     resetData();
