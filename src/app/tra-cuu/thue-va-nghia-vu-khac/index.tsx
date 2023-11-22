@@ -205,7 +205,8 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
       })
     );
 
-    _dataThongTinThue[2].result = noBaoHiem?.data?.debtDetail?.length ? "Có" : "Không";
+    const previousMonth = moment().month() - 1
+    _dataThongTinThue[2].result = moment(noBaoHiem?.data?.dateDebt).month() === previousMonth ? "Có" : "Không"
     _dataThongTinThue[2].totalMoney = noBaoHiem?.data?.totalMoney;
     _dataThongTinThue[2].time = noBaoHiem?.data?.dateDebt ? moment(noBaoHiem?.data?.dateDebt).format("DD/MM/YYYY") : "";
     _dataThongTinThue[2].totalMonth = noBaoHiem?.data?.totalMonth;
