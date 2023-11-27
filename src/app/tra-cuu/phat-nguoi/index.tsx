@@ -35,7 +35,11 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState([]);
   const [visible, setVisible] = useState(false);
+  const resetData = () => {
+    setResult([])
+  }
   const handleSubmit = async () => {
+    resetData()
     setIsLoading(true);
     try {
       const list = bienSo.replaceAll(/\s+/g, "").split(/[,;]/);
@@ -58,7 +62,7 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
       } else {
-        toast.error(error?.response?.data.message || error || `Lỗi hệ thống, Vui lòng thử lại`);
+        toast.error(error?.response?.data.ErrorMessage || error || `Lỗi hệ thống, Vui lòng thử lại`);
       }
     }
     setIsLoading(false);

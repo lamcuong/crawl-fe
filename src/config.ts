@@ -10,6 +10,8 @@ export const apiRuiRoThue = "/crawl-data/tax-risk";
 export const apiThayDoiDKKD = "/crawl-data/annoucement";
 export const apiUploadPhatNguoi = "/crawl-data/upload-traffic-sanction";
 export const apiNoBaoHiem = "/crawl-data/insurance-debt";
+export const apiDanhSachTinhThanh = "/external/cities";
+export const apiDanhSachDonViBHXH = "/external/isurrance-department"
 export const apiLogin = "login";
 
 export const apiDanhSachCQT = "https://tracuuhoadon.gdt.gov.vn/listdmcqt.html";

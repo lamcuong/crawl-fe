@@ -63,10 +63,7 @@ const cuongCheThueFields = [
     field: "ghiChu",
     header: "Ghi chú",
   },
-  {
-    field: "trangThai",
-    header: "Trạng thái",
-  },
+  
 ];
 
 const ruiRoThue = [
@@ -84,7 +81,7 @@ const ruiRoThue = [
   },
   {
     field: "ngayDungSuDung",
-    header: "Ngày sử dụng",
+    header: "Ngày dừng sử dụng",
   },
   {
     field: "ngayThongBao",
@@ -110,7 +107,6 @@ const DetailDialog: React.FC<DetailDialogProps> = ({ visible, setVisible, conten
         field = noBaoHiemFields;
         break;
     }
-
     return content?.map((value) => {
       return (
         <div className="border-y">
@@ -121,8 +117,8 @@ const DetailDialog: React.FC<DetailDialogProps> = ({ visible, setVisible, conten
                 <p className="flex-1">
                   {typeof value[item.field] === "number"
                     ? value[item.field].toLocaleString()
-                    : moment(value[item.field], moment.ISO_8601).isValid()
-                    ? moment(value[item.field]).format("DD/MM/YYYY")
+                    // : moment(value[item.field], moment.ISO_8601).isValid()
+                    // ? moment(value[item.field]).format("DD/MM/YYYY")
                     : value[item.field]}
                 </p>
               </div>

@@ -13,6 +13,8 @@ import { Link } from "react-router-dom";
 import { RadioButton } from "primereact/radiobutton";
 import DetailDialog from "../components/DetailDialog";
 import { Dropdown } from "primereact/dropdown";
+import CQT from "../components/CqtSelect";
+import BHXH from "../components/BhxhSelect";
 const thayDoiGiayPhepDKKD: ColumnsType<DataType> = [
   {
     title: "STT",
@@ -361,6 +363,10 @@ const TraCuu: React.FC<RpaProps> = () => {
     cqtTinh: { code: "", name: "" },
     cqtQuanLy: { code: "", name: "" },
   };
+  const defaultValueBHXH = {
+    tinhThanh: { code: "*", name: "" },
+    donVi: { code: "", name: "" },
+  };
   const [error, setError] = useState(null);
   const [valueCQT, setValueCQT] = useState(defaultValueCQT);
   const [valueNNT, setValueNTT] = useState(initialValue);
@@ -372,36 +378,9 @@ const TraCuu: React.FC<RpaProps> = () => {
   const [dataDanhSachCongTyLienQuan, setDataDanhSachCongTyLienQuan] = useState([]);
   const [dataThayDoiGiayPhepDKKD, setDataThayDoiGiayPhepDKKD] = useState([]);
   const [dataThongTinThue, setDataThongTinThue] = useState(dataThongTinThueDefault);
-  const [cqtTinhOptions, setCqtTinhOptions] = useState([]);
-  const [cqtQuanLyOptions, setCqtQuanLyOptions] = useState([]);
-  useEffect(() => {
-    crawlApi.getDanhSachCQT().then((r) => {
-      const options = [{ code: "*", name: "Chọn cơ quan thuế" }];
-      r?.listCqts?.forEach((item) => {
-        if (item?.cap_cqt === "C") {
-          options.push({ code: item.ma, name: item.ten });
-        }
-      });
-      setCqtTinhOptions(options);
-    });
-  }, []);
-  useEffect(() => {
-    if (valueCQT.cqtTinh.code) {
-      crawlApi.getDanhSachCQT(valueCQT.cqtTinh.code).then((r) => {
-        const options = [];
-        r?.listCqts?.forEach((item) => {
-          options.push({ code: item.ma, name: item.ten });
-        });
-        setCqtQuanLyOptions(options);
-      });
-    }
-  }, [valueCQT.cqtTinh]);
-  useEffect(() => {
-    setValueCQT((prevState) => ({
-      ...prevState,
-      cqtQuanLy: cqtQuanLyOptions[0],
-    }));
-  }, [cqtQuanLyOptions]);
+
+  const [valueBHXH, setValueBHXH] = useState(defaultValueBHXH);
+
   const handleChangeNNT = (name, newValue) => {
     setValueNTT({ ...valueNNT, [name]: newValue });
   };
@@ -412,7 +391,7 @@ const TraCuu: React.FC<RpaProps> = () => {
     setDataThayDoiGiayPhepDKKD([]);
     setDataThongTinThue(dataThongTinThueDefault);
     setError(null);
-    setIsSubmitted(false)
+    setIsSubmitted(false);
   };
   const getThongTinThue = async () => {
     const _dataThongTinThue = [...dataThongTinThue];
@@ -443,17 +422,30 @@ const TraCuu: React.FC<RpaProps> = () => {
       _dataThongTinThue[1].result = "N/A";
     }
 
-    const noBaoHiem = await handleCallApi(() =>
-      crawlApi.getNoBaoHiem({
-        taxCode: valueNNT.taxCode,
-      })
-    );
-    const previousMonth = moment().month() - 1;
-    _dataThongTinThue[2].result = moment(noBaoHiem?.data?.dateDebt).month() === previousMonth ? "Có" : "Không";
-    _dataThongTinThue[2].totalMoney = noBaoHiem?.data?.totalMoney;
-    _dataThongTinThue[2].time = noBaoHiem?.data?.dateDebt ? moment(noBaoHiem?.data?.dateDebt).format("DD/MM/YYYY") : "";
-    _dataThongTinThue[2].totalMonth = noBaoHiem?.data?.totalMonth;
-    _dataThongTinThue[2].detailResult = noBaoHiem?.data?.debtDetail;
+    if (valueBHXH?.donVi?.code) {
+      const noBaoHiem = await handleCallApi(() =>
+        crawlApi.getNoBaoHiem({
+          taxCode: valueNNT.taxCode,
+          cqbhxh: valueBHXH.donVi.code,
+        })
+      );
+      const previousMonth = moment().month() - 1;
+
+      if (noBaoHiem?.code === 1010) {
+        _dataThongTinThue[2].result = "N/A";
+      } else {
+        _dataThongTinThue[2].result = moment(noBaoHiem?.data?.dateDebt).month() === previousMonth ? "Có" : "Không";
+        _dataThongTinThue[2].totalMoney = noBaoHiem?.data?.totalMoney;
+        _dataThongTinThue[2].time = noBaoHiem?.data?.dateDebt
+          ? moment(noBaoHiem?.data?.dateDebt).format("DD/MM/YYYY")
+          : "";
+        _dataThongTinThue[2].totalMonth = noBaoHiem?.data?.totalMonth;
+        _dataThongTinThue[2].detailResult = noBaoHiem?.data?.debtDetail;
+      }
+    } else {
+      _dataThongTinThue[2].result = "N/A";
+    }
+
     setDataThongTinThue(_dataThongTinThue);
   };
 
@@ -469,12 +461,12 @@ const TraCuu: React.FC<RpaProps> = () => {
   };
   const search = async () => {
     setIsLoading(true);
-    // if (!valueCQT?.cqtQuanLy) {
-    //   toast.error("Vui lòng chọn Cơ quan thuế quản lý", {
-    //     autoClose: 500,
-    //   });
-    //   return;
-    // }
+    if (!valueNNT.taxCode) {
+      toast.error("Vui lòng nhập mã số thuế", {
+        autoClose: 500,
+      });
+      return;
+    }
     try {
       // danhSachChiNhanh
       await handleCallApi(
@@ -520,7 +512,7 @@ const TraCuu: React.FC<RpaProps> = () => {
         setIsShowDialog(true);
       }
     }
-    setIsSubmitted(true)
+    setIsSubmitted(true);
   };
   const handleSubmit = async () => {
     resetData();
@@ -546,8 +538,8 @@ const TraCuu: React.FC<RpaProps> = () => {
     if (error && isSubmitted && !isLoading) {
       toast.error(error);
     }
-    if(isSubmitted && !isLoading && !error){
-      toast.success("Tra cứu thành công")
+    if (isSubmitted && !isLoading && !error) {
+      toast.success("Tra cứu thành công");
     }
   }, [error, isLoading, isSubmitted]);
 
@@ -581,42 +573,15 @@ const TraCuu: React.FC<RpaProps> = () => {
             checked={searchType === "cardId"}
           />
           <label htmlFor="cardId" className="ml-2">
-            Tra cứu theo CMND/CCCD
+            Tra cứu theo CMND/CCCD/Passport
           </label>
         </div>
       </div>
       <div className="w-1/2 lg:w-2/5 flex flex-col mx-auto gap-2">
         {searchType === "taxCode" ? (
           <>
-            <div className="flex gap-2">
-              <Dropdown
-                value={valueCQT.cqtTinh}
-                options={cqtTinhOptions}
-                onChange={(e) => {
-                  setValueCQT((prevState) => ({
-                    ...prevState,
-                    cqtTinh: e.value,
-                  }));
-                }}
-                filter={true}
-                optionLabel="name"
-                placeholder="Chọn cơ quan thuế"
-                className="w-full overflow-hidden"
-              />
-              <Dropdown
-                value={valueCQT.cqtQuanLy}
-                options={cqtQuanLyOptions}
-                onChange={(e) =>
-                  setValueCQT((prevState) => ({
-                    ...prevState,
-                    cqtQuanLy: e.value,
-                  }))
-                }
-                optionLabel="name"
-                filter={true}
-                className="w-full overflow-hidden"
-              />
-            </div>
+            <CQT valueCQT={valueCQT} setValueCQT={setValueCQT} />
+            <BHXH valueBHXH={valueBHXH} setValueBHXH={setValueBHXH} />
             <InputText
               className="p-2"
               id="taxCode"

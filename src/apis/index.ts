@@ -4,7 +4,9 @@ import {
   apiDanhSachCQT,
   apiDanhSachChiNhanh,
   apiDanhSachCongTyLienQuan,
+  apiDanhSachDonViBHXH,
   apiDanhSachNguoiLienQuan,
+  apiDanhSachTinhThanh,
   apiLogin,
   apiNoBaoHiem,
   apiPhatNguoi,
@@ -53,12 +55,19 @@ const getDanhSachCQT = (input?: any) => {
   const cqt = input ? `?cap=cc&byma=true&cqt=${input}` : "";
   return fetch(`/listdmcqt.html${cqt}`).then((r) => r.json().then((data) => data));
 };
+const getDanhSachTinhThanh = () => {
+  return handleApiRequest(()=>_axios.get(apiDanhSachTinhThanh));
+}
+const getDanhSachDonViBHXH = (input: any) => {
+  return handleApiRequest(()=>_axios.get(`${apiDanhSachDonViBHXH}?cityCode=${input}`))
+}
 const getNoBaoHiem = (input: any) => {
   return handleApiRequest(() => _axios.post(apiNoBaoHiem, input));
 };
 const getThayDoiDKKD = (input: any) => {
   return handleApiRequest(() => _axios.post(apiThayDoiDKKD, input));
 };
+
 const crawlApi = {
   login,
   getDanhSachChiNhanh,
@@ -72,6 +81,8 @@ const crawlApi = {
   getThayDoiDKKD,
   getUploadPhatNguoi,
   getNoBaoHiem,
+  getDanhSachTinhThanh,
+  getDanhSachDonViBHXH
 };
 
 export default crawlApi;
