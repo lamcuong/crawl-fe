@@ -394,8 +394,8 @@ const TraCuu: React.FC<RpaProps> = () => {
     setIsSubmitted(false);
   };
   const getThongTinThue = async () => {
-    const _dataThongTinThue = [...dataThongTinThue];
-
+    const _dataThongTinThue = [...dataThongTinThueDefault];
+    
     const cuongCheThue = await handleCallApi(() =>
       crawlApi.getCuongCheThue({
         taxCode: valueNNT.taxCode,
@@ -461,12 +461,6 @@ const TraCuu: React.FC<RpaProps> = () => {
   };
   const search = async () => {
     setIsLoading(true);
-    if (!valueNNT.taxCode) {
-      toast.error("Vui lòng nhập mã số thuế", {
-        autoClose: 500,
-      });
-      return;
-    }
     try {
       // danhSachChiNhanh
       await handleCallApi(
@@ -512,14 +506,24 @@ const TraCuu: React.FC<RpaProps> = () => {
         setIsShowDialog(true);
       }
     }
-    setIsSubmitted(true);
   };
   const handleSubmit = async () => {
-    resetData();
-
+    if (!valueNNT.taxCode && searchType === "taxCode") {
+      toast.error("Vui lòng nhập mã số thuế", {
+        autoClose: 500,
+      });
+      return;
+    } else if (!valueNNT.cardId && searchType === "cardId") {
+      toast.error("Vui lòng nhập CCCD/CMND/Passport", {
+        autoClose: 500,
+      });
+      return;
+    }
+     resetData();
     if (searchType === "taxCode") {
       await search();
     } else {
+      setIsLoading(true);
       await handleCallApi(
         () =>
           crawlApi.getDanhSachChiNhanh({
@@ -531,6 +535,7 @@ const TraCuu: React.FC<RpaProps> = () => {
         }
       );
     }
+    setIsSubmitted(true);
 
     setIsLoading(false);
   };
@@ -596,7 +601,7 @@ const TraCuu: React.FC<RpaProps> = () => {
           <InputText
             className="p-2"
             id="cardId"
-            placeholder="CCCD/CMND"
+            placeholder="CCCD/CMND/Passport"
             onChange={(e) => handleChangeNNT(e.target.name, e.target.value)}
             type="text"
             value={valueNNT.cardId}
@@ -613,30 +618,35 @@ const TraCuu: React.FC<RpaProps> = () => {
         />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ">
-        <TableComponent
-          pagination={false}
-          className="col-span-full"
-          title="Thông Tin Về Thuế & Nghĩa Vụ Khác"
-          columns={thongTinVeThue}
-          data={isSubmitted && !error ? dataThongTinThue : dataThongTinThueDefault}
-        />
-        <TableComponent
-          title="Thay đổi giấy phép ĐKKD"
-          columns={thayDoiGiayPhepDKKD}
-          data={isSubmitted && !error ? dataThayDoiGiayPhepDKKD : null}
-        />
-        <TableComponent
-          title="Danh sách người liên quan"
-          columns={danhSachNguoiLienQuan}
-          data={isSubmitted && !error ? dataDanhSachNguoiLienQuan : null}
-        />
+        {searchType === "taxCode" &&  (
+            <>
+              <TableComponent
+                pagination={false}
+                className="col-span-full"
+                title="Thông Tin Về Thuế & Nghĩa Vụ Khác"
+                columns={thongTinVeThue}
+                data={isSubmitted && !error ? dataThongTinThue : dataThongTinThueDefault}
+              />
+              <TableComponent
+                title="Thay đổi giấy phép ĐKKD"
+                columns={thayDoiGiayPhepDKKD}
+                data={isSubmitted && !error ? dataThayDoiGiayPhepDKKD : null}
+              />
+              <TableComponent
+                title="Danh sách người liên quan"
+                columns={danhSachNguoiLienQuan}
+                data={isSubmitted && !error ? dataDanhSachNguoiLienQuan : null}
+              />
 
-        <TableComponent
-          className="col-span-full "
-          title="Danh sách Công ty liên quan của Người Liên Quan"
-          columns={danhSachCongTyLienQuan}
-          data={isSubmitted && !error ? dataDanhSachCongTyLienQuan : null}
-        />
+              <TableComponent
+                className="col-span-full "
+                title="Danh sách Công ty liên quan của Người Liên Quan"
+                columns={danhSachCongTyLienQuan}
+                data={isSubmitted && !error ? dataDanhSachCongTyLienQuan : null}
+              />
+            </>
+          )
+         }
         <TableComponent
           className="col-span-full"
           title="Danh sách chi nhánh"

@@ -94,6 +94,7 @@ const ruiRoThue = [
 ];
 
 const DetailDialog: React.FC<DetailDialogProps> = ({ visible, setVisible, content, dialogName }) => {
+  const ISO8601 = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?(Z|[+-]\d{2}:\d{2})?$/
   const render = () => {
     let field;
     switch (dialogName) {
@@ -117,8 +118,8 @@ const DetailDialog: React.FC<DetailDialogProps> = ({ visible, setVisible, conten
                 <p className="flex-1">
                   {typeof value[item.field] === "number"
                     ? value[item.field].toLocaleString()
-                    // : moment(value[item.field], moment.ISO_8601).isValid()
-                    // ? moment(value[item.field]).format("DD/MM/YYYY")
+                    : ISO8601.test(value[item.field])
+                    ? moment(value[item.field]).format("DD/MM/YYYY")
                     : value[item.field]}
                 </p>
               </div>
