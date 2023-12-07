@@ -422,29 +422,29 @@ const TraCuu: React.FC<RpaProps> = () => {
       _dataThongTinThue[1].result = "N/A";
     }
 
-    if (valueBHXH?.donVi?.code) {
-      const noBaoHiem = await handleCallApi(() =>
-        crawlApi.getNoBaoHiem({
-          taxCode: valueNNT.taxCode,
-          cqbhxh: valueBHXH.donVi.code,
-        })
-      );
-      const previousMonth = moment().month() - 1;
+    // if (valueBHXH?.donVi?.code) {
+    //   const noBaoHiem = await handleCallApi(() =>
+    //     crawlApi.getNoBaoHiem({
+    //       taxCode: valueNNT.taxCode,
+    //       cqbhxh: valueBHXH.donVi.code,
+    //     })
+    //   );
+    //   const previousMonth = moment().month() - 1;
 
-      if (noBaoHiem?.code === 1010) {
-        _dataThongTinThue[2].result = "N/A";
-      } else {
-        _dataThongTinThue[2].result = moment(noBaoHiem?.data?.dateDebt).month() === previousMonth ? "Có" : "Không";
-        _dataThongTinThue[2].totalMoney = noBaoHiem?.data?.totalMoney;
-        _dataThongTinThue[2].time = noBaoHiem?.data?.dateDebt
-          ? moment(noBaoHiem?.data?.dateDebt).format("DD/MM/YYYY")
-          : "";
-        _dataThongTinThue[2].totalMonth = noBaoHiem?.data?.totalMonth;
-        _dataThongTinThue[2].detailResult = noBaoHiem?.data?.debtDetail;
-      }
-    } else {
-      _dataThongTinThue[2].result = "N/A";
-    }
+    //   if (noBaoHiem?.code === 1010) {
+    //     _dataThongTinThue[2].result = "N/A";
+    //   } else {
+    //     _dataThongTinThue[2].result = moment(noBaoHiem?.data?.dateDebt).month() === previousMonth ? "Có" : "Không";
+    //     _dataThongTinThue[2].totalMoney = noBaoHiem?.data?.totalMoney;
+    //     _dataThongTinThue[2].time = noBaoHiem?.data?.dateDebt
+    //       ? moment(noBaoHiem?.data?.dateDebt).format("DD/MM/YYYY")
+    //       : "";
+    //     _dataThongTinThue[2].totalMonth = noBaoHiem?.data?.totalMonth;
+    //     _dataThongTinThue[2].detailResult = noBaoHiem?.data?.debtDetail;
+    //   }
+    // } else {
+    //   _dataThongTinThue[2].result = "N/A";
+    // }
 
     setDataThongTinThue(_dataThongTinThue);
   };
