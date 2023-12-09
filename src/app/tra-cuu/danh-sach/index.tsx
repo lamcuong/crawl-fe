@@ -32,17 +32,39 @@ const thayDoiGiayPhepDKKD: ColumnsType<DataType> = [
   },
   {
     title: "Nội Dung Thay Đổi",
-    dataIndex: "file",
-    key: "file",
-    render: (text, record, index) => (
-      <div className="text-center">
-        <Link to={text} target="_blank">
-          <Button>
-            <i className="pi pi-file-pdf" />
-          </Button>
-        </Link>
-      </div>
-    ),
+    dataIndex: "base64",
+    key: "base64",
+    render: (text, record, index) => {
+      console.log(text)
+      return <div className="text-center">
+      {/* <Link to={text} target="_blank"> */}
+        <Button onClick={()=>{
+       
+           const filename = "file.pdf";
+       
+           const byteCharacters = atob(text);
+           const byteNumbers = new Array(byteCharacters.length);
+           for (let i = 0; i < byteCharacters.length; i++) {
+             byteNumbers[i] = byteCharacters.charCodeAt(i);
+           }
+           const byteArray = new Uint8Array(byteNumbers);
+           const blob = new Blob([byteArray], { type: 'application/octet-stream' });
+           const url = URL.createObjectURL(blob);
+           const link = document.createElement('a');
+           link.href = url;
+           link.download = filename;
+           document.body.appendChild(link);
+           link.click();
+       
+           document.body.removeChild(link);
+           URL.revokeObjectURL(url);
+        }}
+        >
+          <i className="pi pi-file-pdf" />
+        </Button>
+      {/* </Link> */}
+    </div>
+    },
     align: "left",
   },
 ];
@@ -367,6 +389,7 @@ const TraCuu: React.FC<RpaProps> = () => {
     tinhThanh: { code: "*", name: "" },
     donVi: { code: "", name: "" },
   };
+
   const [error, setError] = useState(null);
   const [valueCQT, setValueCQT] = useState(defaultValueCQT);
   const [valueNNT, setValueNTT] = useState(initialValue);

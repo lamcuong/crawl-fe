@@ -1,4 +1,4 @@
-export const baseURL = "http://103.61.122.195:8092";
+export const baseURL = "http://14.225.31.126:8092";
 
 export const apiDanhSachChiNhanh = "/crawl-data/taxplayer";
 export const apiDanhSachNguoiLienQuan = "/crawl-data/share-holder";
