@@ -27,7 +27,7 @@ const thayDoiGiayPhepDKKD: ColumnsType<DataType> = [
     title: "Thời Gian Thay Đổi",
     dataIndex: "thoiGianThayDoi",
     key: "thoiGianThayDoi",
-    render: (text, record, index) => <p>{text.split(" ")[0]}</p>,
+    render: (text, record, index) => <p>{text?.split(" ")?.[0]}</p>,
     align: "left",
   },
   {
