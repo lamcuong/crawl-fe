@@ -11,6 +11,7 @@ import App from "./App";
 import TaiSan from "./app/tra-cuu/tsbd";
 import PhatNguoi from "./app/tra-cuu/phat-nguoi";
 import ThueVaNghiaVuKhac from "./app/tra-cuu/thue-va-nghia-vu-khac";
+import NoBaoHiem from "./app/tra-cuu/no-bao-hiem";
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 const router = createBrowserRouter([
   {
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
       {
         path: "/tra-cuu/thue-va-nghia-vu-khac",
         element: <ThueVaNghiaVuKhac />,
+      },
+      {
+        path: "/tra-cuu/no-bao-hiem",
+        element: <NoBaoHiem />,
       },
       {
         path: "*",

@@ -2,7 +2,7 @@ import { Button } from "primereact/button";
 
 import { Dialog } from "primereact/dialog";
 import { useNavigate } from "react-router-dom";
-export function DialogDemo(props: any) {
+export function DialogLogin(props: any) {
   const navigate = useNavigate();
   return (
       <Dialog

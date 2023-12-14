@@ -1,6 +1,6 @@
 //@ts-nocheck
 import React, { useEffect, useState } from "react";
-import { DialogDemo } from "../components/LoginDialog";
+import { DialogLogin } from "../components/LoginDialog";
 import DetailDialog from "../components/DetailDialog";
 import { Button } from "primereact/button";
 import TableComponent from "../components/Table";
@@ -140,34 +140,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
   const [error, setError] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // useEffect(() => {
-  //   crawlApi.getDanhSachCQT().then((r) => {
-  //     const options = [{ code: "*", name: "Chọn cơ quan thuế" }];
-  //     r?.listCqts?.forEach((item) => {
-  //       if (item?.cap_cqt === "C") {
-  //         options.push({ code: item.ma, name: item.ten });
-  //       }
-  //     });
-  //     setCqtTinhOptions(options);
-  //   });
-  // }, []);
-  // useEffect(() => {
-  //   if (valueCQT.cqtTinh.code) {
-  //     crawlApi.getDanhSachCQT(valueCQT.cqtTinh.code).then((res) => {
-  //       const options = [];
-  //       res?.listCqts?.forEach((item) => {
-  //         options.push({ code: item.ma, name: item.ten });
-  //       });
-  //       setCqtQuanLyOptions(options);
-  //     });
-  //   }
-  // }, [valueCQT.cqtTinh]);
-  // useEffect(() => {
-  //   setValueCQT((prevState) => ({
-  //     ...prevState,
-  //     cqtQuanLy: cqtQuanLyOptions[0],
-  //   }));
-  // }, [cqtQuanLyOptions]);
+
 
   useEffect(() => {
     if (error && isSubmitted && !isLoading) {
@@ -207,30 +180,18 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
       _dataThongTinThue[1].result = "N/A";
     }
 
-    // if (valueBHXH?.donVi?.code) {
-    //   const noBaoHiem = await handleCallApi(() =>
-    //     crawlApi.getNoBaoHiem({
-    //       taxCode,
-    //       cqbhxh: valueBHXH.donVi.code
-    //     })
-    //   );
+    const noBaoHiem = await handleCallApi(() =>
+      crawlApi.getNoBaoHiem({
+        taxCode,
+      })
+    );
 
-    //   const previousMonth = moment().month() - 1;
-    //   if (noBaoHiem?.code === 1010) {
-    //     _dataThongTinThue[2].result = "N/A";
-    //   } else {
-    //     _dataThongTinThue[2].result = moment(noBaoHiem?.data?.dateDebt).month() === previousMonth ? "Có" : "Không";
-    //     _dataThongTinThue[2].totalMoney = noBaoHiem?.data?.totalMoney;
-    //     _dataThongTinThue[2].time = noBaoHiem?.data?.dateDebt
-    //       ? moment(noBaoHiem?.data?.dateDebt).format("DD/MM/YYYY")
-    //       : "";
-    //     _dataThongTinThue[2].totalMonth = noBaoHiem?.data?.totalMonth;
-    //     _dataThongTinThue[2].detailResult = noBaoHiem?.data?.debtDetail;
-    //   }
-    // } else {
-    //   _dataThongTinThue[2].result = "N/A";
-    // }
-
+    const previousMonth = moment().month() - 1;
+    _dataThongTinThue[2].result = moment(noBaoHiem?.data?.dateDebt).month() === previousMonth ? "Có" : "Không";
+    _dataThongTinThue[2].totalMoney = noBaoHiem?.data?.totalMoney;
+    _dataThongTinThue[2].time = noBaoHiem?.data?.dateDebt ? moment(noBaoHiem?.data?.dateDebt).format("DD/MM/YYYY") : "";
+    _dataThongTinThue[2].totalMonth = noBaoHiem?.data?.totalMonth;
+    _dataThongTinThue[2].detailResult = noBaoHiem?.data?.debtDetail;
     setDataThongTinThue(_dataThongTinThue);
   };
 
@@ -271,75 +232,10 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
   return (
     <div className="flex gap-10 justify-center flex-col">
       <DetailDialog content={detailResult} dialogName={dialogName} visible={visible} setVisible={setVisible} />
-      <DialogDemo isShowDialog={isShowDialog} setIsShowDialog={setIsShowDialog} />
+      <DialogLogin isShowDialog={isShowDialog} setIsShowDialog={setIsShowDialog} />
 
       <div className="w-1/2 lg:w-2/5 flex flex-col mx-auto gap-2">
-        {/* <div>
-              <p className=" font-semibold">Chọn cơ quan thuế</p>
-              <div className="flex gap-2">
-                <Dropdown
-                  value={valueCQT.cqtTinh}
-                  options={cqtTinhOptions}
-                  onChange={(e) => {
-                    setValueCQT((prevState) => ({
-                      ...prevState,
-                      cqtTinh: e.value,
-                    }));
-                  }}
-                  filter={true}
-                  optionLabel="name"
-                  placeholder="Chọn cơ quan thuế"
-                  className="w-full overflow-hidden"
-                />
-                <Dropdown
-                  value={valueCQT.cqtQuanLy}
-                  options={cqtQuanLyOptions}
-                  onChange={(e) =>
-                    setValueCQT((prevState) => ({
-                      ...prevState,
-                      cqtQuanLy: e.value,
-                    }))
-                  }
-                  optionLabel="name"
-                  filter={true}
-                  className="w-full overflow-hidden"
-                />
-              </div>
-            </div>
-            <div>
-              <p className="font-semibold">Chọn cơ quan bảo hiểm xã hội</p>
-              <div className="flex gap-2">
-                <Dropdown
-                  value={valueCQT.cqtTinh}
-                  options={cqtTinhOptions}
-                  onChange={(e) => {
-                    setValueCQT((prevState) => ({
-                      ...prevState,
-                      cqtTinh: e.value,
-                    }));
-                  }}
-                  filter={true}
-                  optionLabel="name"
-                  placeholder="Tỉnh thành"
-                  className="w-full overflow-hidden"
-                />
-                <Dropdown
-                  value={valueCQT.cqtQuanLy}
-                  options={cqtQuanLyOptions}
-                  onChange={(e) =>
-                    setValueCQT((prevState) => ({
-                      ...prevState,
-                      cqtQuanLy: e.value,
-                    }))
-                  }
-                  optionLabel="name"
-                  filter={true}
-                  className="w-full overflow-hidden"
-                />
-              </div>
-            </div> */}
         <CQT valueCQT={valueCQT} setValueCQT={setValueCQT} />
-        <BHXH valueBHXH={valueBHXH} setValueBHXH={setValueBHXH} />
         <InputText
           className="p-2"
           id="taxCode"

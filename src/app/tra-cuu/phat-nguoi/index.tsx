@@ -1,7 +1,7 @@
 //@ts-nocheck
 "use client";
 import React, { useState, useRef } from "react";
-import { DialogDemo } from "../components/LoginDialog";
+import { DialogLogin } from "../components/LoginDialog";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import crawlApi from "../../../apis";
@@ -70,7 +70,7 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
   const ref = useRef();
   return (
     <div className="min-w-fit w-1/2 mx-auto ">
-      <DialogDemo isShowDialog={isShowDialog} />
+      <DialogLogin isShowDialog={isShowDialog} />
       <Dialog
         dismissableMask
         header={"Thêm mới Import Excel"}

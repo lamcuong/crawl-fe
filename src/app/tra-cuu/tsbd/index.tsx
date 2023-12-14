@@ -2,7 +2,7 @@
 import "../../layout/tsbd/index.css";
 import React, { useState } from "react";
 import { RadioButton } from "primereact/radiobutton";
-import { DialogDemo } from "../components/LoginDialog";
+import { DialogLogin } from "../components/LoginDialog";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import crawlApi from "../../../apis";
@@ -59,7 +59,7 @@ const TaiSan: React.FC<TaiSanProps> = () => {
   };
   return (
     <div className="mx-auto flex flex-col">
-      <DialogDemo isShowDialog={isShowDialog} />
+      <DialogLogin isShowDialog={isShowDialog} />
       <div className="flex align-items-center justify-center gap-5">
         <div>
           <RadioButton

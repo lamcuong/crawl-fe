@@ -7,6 +7,8 @@ import {
   apiDanhSachDonViBHXH,
   apiDanhSachNguoiLienQuan,
   apiDanhSachTinhThanh,
+  apiExportBHXH,
+  apiImportBHXH,
   apiLogin,
   apiNoBaoHiem,
   apiPhatNguoi,
@@ -56,16 +58,22 @@ const getDanhSachCQT = (input?: any) => {
   return fetch(`/listdmcqt.html${cqt}`).then((r) => r.json().then((data) => data));
 };
 const getDanhSachTinhThanh = () => {
-  return handleApiRequest(()=>_axios.get(apiDanhSachTinhThanh));
-}
+  return handleApiRequest(() => _axios.get(apiDanhSachTinhThanh));
+};
 const getDanhSachDonViBHXH = (input: any) => {
-  return handleApiRequest(()=>_axios.get(`${apiDanhSachDonViBHXH}?cityCode=${input}`))
-}
+  return handleApiRequest(() => _axios.get(`${apiDanhSachDonViBHXH}?cityCode=${input}`));
+};
 const getNoBaoHiem = (input: any) => {
   return handleApiRequest(() => _axios.post(apiNoBaoHiem, input));
 };
 const getThayDoiDKKD = (input: any) => {
   return handleApiRequest(() => _axios.post(apiThayDoiDKKD, input));
+};
+const importBHXH = (input: any) => {
+  return handleApiRequest(() => _axios.post(apiImportBHXH, input));
+};
+const exportBHXH = (input: any) => {
+  return handleApiRequest(() => _axios.get(apiExportBHXH, {params:input}));
 };
 
 const crawlApi = {
@@ -82,7 +90,9 @@ const crawlApi = {
   getUploadPhatNguoi,
   getNoBaoHiem,
   getDanhSachTinhThanh,
-  getDanhSachDonViBHXH
+  getDanhSachDonViBHXH,
+  importBHXH,
+  exportBHXH,
 };
 
 export default crawlApi;
