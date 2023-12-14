@@ -5,14 +5,13 @@ import "react-toastify/dist/ReactToastify.css";
 import { InputText } from "primereact/inputtext";
 import TableComponent from "../components/Table";
 import { Button } from "primereact/button";
-import { DialogDemo } from "../components/LoginDialog";
+import { DialogLogin } from "../components/LoginDialog";
 
 import crawlApi from "../../../apis";
 import moment from "moment";
 import { Link } from "react-router-dom";
 import { RadioButton } from "primereact/radiobutton";
 import DetailDialog from "../components/DetailDialog";
-import { Dropdown } from "primereact/dropdown";
 import CQT from "../components/CqtSelect";
 import BHXH from "../components/BhxhSelect";
 const thayDoiGiayPhepDKKD: ColumnsType<DataType> = [
@@ -35,25 +34,29 @@ const thayDoiGiayPhepDKKD: ColumnsType<DataType> = [
     dataIndex: "base64",
     key: "base64",
     render: (text, record, index) => {
-      return <div className="text-center">
-      {/* <Link to={text} target="_blank"> */}
-        <Button type="button" onClick={()=>{
-        const byteCharacters = atob(text);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: 'application/pdf' });
-      
-        const pdfUrl = URL.createObjectURL(blob);
-        window.open(pdfUrl)
-        }}
-        >
-          <i className="pi pi-file-pdf" />
-        </Button>
-      {/* </Link> */}
-    </div>
+      return (
+        <div className="text-center">
+          {/* <Link to={text} target="_blank"> */}
+          <Button
+            type="button"
+            onClick={() => {
+              const byteCharacters = atob(text);
+              const byteNumbers = new Array(byteCharacters.length);
+              for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+              }
+              const byteArray = new Uint8Array(byteNumbers);
+              const blob = new Blob([byteArray], { type: "application/pdf" });
+
+              const pdfUrl = URL.createObjectURL(blob);
+              window.open(pdfUrl);
+            }}
+          >
+            <i className="pi pi-file-pdf" />
+          </Button>
+          {/* </Link> */}
+        </div>
+      );
     },
     align: "left",
   },
@@ -283,15 +286,6 @@ const TraCuu: React.FC<RpaProps> = () => {
       historyResult: "",
       detailResult: "",
     },
-    // {
-    //   content: "Nợ Hải Quan",
-    //   result: "",
-    //   time: "",
-    //   amount: "",
-    //   monthCount: "",
-    //   historyResult: "",
-    //   detailResult: "",
-    // },
     {
       content: "Nợ bảo hiểm xã hội hiện hữu",
       result: "",
@@ -375,10 +369,6 @@ const TraCuu: React.FC<RpaProps> = () => {
     cqtTinh: { code: "", name: "" },
     cqtQuanLy: { code: "", name: "" },
   };
-  const defaultValueBHXH = {
-    tinhThanh: { code: "*", name: "" },
-    donVi: { code: "", name: "" },
-  };
 
   const [error, setError] = useState(null);
   const [valueCQT, setValueCQT] = useState(defaultValueCQT);
@@ -391,8 +381,6 @@ const TraCuu: React.FC<RpaProps> = () => {
   const [dataDanhSachCongTyLienQuan, setDataDanhSachCongTyLienQuan] = useState([]);
   const [dataThayDoiGiayPhepDKKD, setDataThayDoiGiayPhepDKKD] = useState([]);
   const [dataThongTinThue, setDataThongTinThue] = useState(dataThongTinThueDefault);
-
-  const [valueBHXH, setValueBHXH] = useState(defaultValueBHXH);
 
   const handleChangeNNT = (name, newValue) => {
     setValueNTT({ ...valueNNT, [name]: newValue });
@@ -408,7 +396,7 @@ const TraCuu: React.FC<RpaProps> = () => {
   };
   const getThongTinThue = async () => {
     const _dataThongTinThue = [...dataThongTinThueDefault];
-    
+
     const cuongCheThue = await handleCallApi(() =>
       crawlApi.getCuongCheThue({
         taxCode: valueNNT.taxCode,
@@ -435,29 +423,18 @@ const TraCuu: React.FC<RpaProps> = () => {
       _dataThongTinThue[1].result = "N/A";
     }
 
-    // if (valueBHXH?.donVi?.code) {
-    //   const noBaoHiem = await handleCallApi(() =>
-    //     crawlApi.getNoBaoHiem({
-    //       taxCode: valueNNT.taxCode,
-    //       cqbhxh: valueBHXH.donVi.code,
-    //     })
-    //   );
-    //   const previousMonth = moment().month() - 1;
+    const noBaoHiem = await handleCallApi(() =>
+      crawlApi.getNoBaoHiem({
+        taxCode: valueNNT.taxCode,
+      })
+    );
+    const previousMonth = moment().month() - 1;
 
-    //   if (noBaoHiem?.code === 1010) {
-    //     _dataThongTinThue[2].result = "N/A";
-    //   } else {
-    //     _dataThongTinThue[2].result = moment(noBaoHiem?.data?.dateDebt).month() === previousMonth ? "Có" : "Không";
-    //     _dataThongTinThue[2].totalMoney = noBaoHiem?.data?.totalMoney;
-    //     _dataThongTinThue[2].time = noBaoHiem?.data?.dateDebt
-    //       ? moment(noBaoHiem?.data?.dateDebt).format("DD/MM/YYYY")
-    //       : "";
-    //     _dataThongTinThue[2].totalMonth = noBaoHiem?.data?.totalMonth;
-    //     _dataThongTinThue[2].detailResult = noBaoHiem?.data?.debtDetail;
-    //   }
-    // } else {
-    //   _dataThongTinThue[2].result = "N/A";
-    // }
+    _dataThongTinThue[2].result = moment(noBaoHiem?.data?.dateDebt).month() === previousMonth ? "Có" : "Không";
+    _dataThongTinThue[2].totalMoney = noBaoHiem?.data?.totalMoney;
+    _dataThongTinThue[2].time = noBaoHiem?.data?.dateDebt ? moment(noBaoHiem?.data?.dateDebt).format("DD/MM/YYYY") : "";
+    _dataThongTinThue[2].totalMonth = noBaoHiem?.data?.totalMonth;
+    _dataThongTinThue[2].detailResult = noBaoHiem?.data?.debtDetail;
 
     setDataThongTinThue(_dataThongTinThue);
   };
@@ -532,7 +509,7 @@ const TraCuu: React.FC<RpaProps> = () => {
       });
       return;
     }
-     resetData();
+    resetData();
     if (searchType === "taxCode") {
       await search();
     } else {
@@ -568,7 +545,7 @@ const TraCuu: React.FC<RpaProps> = () => {
   return (
     <div className="flex gap-10 justify-center flex-col">
       <DetailDialog content={detailResult} dialogName={dialogName} visible={visible} setVisible={setVisible} />
-      <DialogDemo isShowDialog={isShowDialog} setIsShowDialog={setIsShowDialog} />
+      <DialogLogin isShowDialog={isShowDialog} setIsShowDialog={setIsShowDialog} />
       <div className="flex align-items-center justify-center gap-5">
         <div>
           <RadioButton
@@ -599,7 +576,7 @@ const TraCuu: React.FC<RpaProps> = () => {
         {searchType === "taxCode" ? (
           <>
             <CQT valueCQT={valueCQT} setValueCQT={setValueCQT} />
-            <BHXH valueBHXH={valueBHXH} setValueBHXH={setValueBHXH} />
+
             <InputText
               className="p-2"
               id="taxCode"
@@ -631,35 +608,34 @@ const TraCuu: React.FC<RpaProps> = () => {
         />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ">
-        {searchType === "taxCode" &&  (
-            <>
-              <TableComponent
-                pagination={false}
-                className="col-span-full"
-                title="Thông Tin Về Thuế & Nghĩa Vụ Khác"
-                columns={thongTinVeThue}
-                data={isSubmitted && !error ? dataThongTinThue : dataThongTinThueDefault}
-              />
-              <TableComponent
-                title="Thay đổi giấy phép ĐKKD"
-                columns={thayDoiGiayPhepDKKD}
-                data={isSubmitted && !error ? dataThayDoiGiayPhepDKKD : null}
-              />
-              <TableComponent
-                title="Danh sách người liên quan"
-                columns={danhSachNguoiLienQuan}
-                data={isSubmitted && !error ? dataDanhSachNguoiLienQuan : null}
-              />
+        {searchType === "taxCode" && (
+          <>
+            <TableComponent
+              pagination={false}
+              className="col-span-full"
+              title="Thông Tin Về Thuế & Nghĩa Vụ Khác"
+              columns={thongTinVeThue}
+              data={isSubmitted && !error ? dataThongTinThue : dataThongTinThueDefault}
+            />
+            <TableComponent
+              title="Thay đổi giấy phép ĐKKD"
+              columns={thayDoiGiayPhepDKKD}
+              data={isSubmitted && !error ? dataThayDoiGiayPhepDKKD : null}
+            />
+            <TableComponent
+              title="Danh sách người liên quan"
+              columns={danhSachNguoiLienQuan}
+              data={isSubmitted && !error ? dataDanhSachNguoiLienQuan : null}
+            />
 
-              <TableComponent
-                className="col-span-full "
-                title="Danh sách Công ty liên quan của Người Liên Quan"
-                columns={danhSachCongTyLienQuan}
-                data={isSubmitted && !error ? dataDanhSachCongTyLienQuan : null}
-              />
-            </>
-          )
-         }
+            <TableComponent
+              className="col-span-full "
+              title="Danh sách Công ty liên quan của Người Liên Quan"
+              columns={danhSachCongTyLienQuan}
+              data={isSubmitted && !error ? dataDanhSachCongTyLienQuan : null}
+            />
+          </>
+        )}
         <TableComponent
           className="col-span-full"
           title="Danh sách chi nhánh"

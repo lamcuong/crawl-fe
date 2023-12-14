@@ -56,6 +56,17 @@ const Header = () => {
               label="Thuế & Nghĩa vụ khác"
             ></Button>
           </li>
+          <li>
+            <Button
+              className={`${path === "/tra-cuu/no-bao-hiem" && activeClass} !text-left w-full !rounded-none`}
+              type="button"
+              onClick={() => {
+                setVisible(false);
+                navigate("/tra-cuu/no-bao-hiem");
+              }}
+              label="Danh sách nợ bảo hiểm xã hội"
+            />
+          </li>
         </ul>
       </Sidebar>
       <div className="bg-neutral-200 p-5 ">
@@ -104,6 +115,16 @@ const Header = () => {
               }}
               label="Thuế & Nghĩa vụ khác"
             ></Button>
+          </li>
+          <li>
+            <Button
+              className={path === "/tra-cuu/no-bao-hiem" ? activeClass : ""}
+              type="button"
+              onClick={() => {
+                navigate("/tra-cuu/no-bao-hiem");
+              }}
+              label="Danh sách nợ bảo hiểm xã hội"
+            />
           </li>
         </ul>
       </div>
