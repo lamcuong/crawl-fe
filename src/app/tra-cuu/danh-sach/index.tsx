@@ -466,7 +466,7 @@ const TraCuu: React.FC<RpaProps> = () => {
       );
       // thayDoiGiayPhepDKKD
       await handleCallApi(
-        () => crawlApi.getThayDoiDKKD({ taxCode: valueNNT.taxCode, loaiThongBao: "AMEND" }),
+        () => crawlApi.getThayDoiDKKD({ taxCode: valueNNT.taxCode, loaiThongBao: "AMEND,CHANTC" }),
         (thayDoiGiayPhepDKKD) => {
           setDataThayDoiGiayPhepDKKD(thayDoiGiayPhepDKKD.data);
         }
