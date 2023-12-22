@@ -483,12 +483,8 @@ const TraCuu: React.FC<RpaProps> = () => {
         }
       );
       // danhSachCongTyLienQuan
-      await handleCallApi(
-        () => crawlApi.getDanhSachCongTyLienQuan({ taxCode: valueNNT.taxCode }),
-        (congTyLienQuan) => {
-          setDataDanhSachCongTyLienQuan(congTyLienQuan.data);
-        }
-      );
+      await crawlApi.getDanhSachCongTyLienQuan({taxCode:valueNNT.taxCode})
+
       await getThongTinThue();
     } catch (error) {
       setIsLoading(false);

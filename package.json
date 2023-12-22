@@ -2,7 +2,6 @@
   "name": "crawl",
   "version": "0.1.0",
   "private": true,
-  "proxy": "https://tracuuhoadon.gdt.gov.vn",
   "dependencies": {
     "@tanstack/react-query": "^4.36.1",
     "@testing-library/jest-dom": "^5.17.0",

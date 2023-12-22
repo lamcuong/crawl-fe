@@ -55,7 +55,7 @@ const getRuiRoThue = (input: any) => {
 };
 const getDanhSachCQT = (input?: any) => {
   const cqt = input ? `?cap=cc&byma=true&cqt=${input}` : "";
-  return fetch(`/listdmcqt.html${cqt}`).then((r) => r.json().then((data) => data));
+  return fetch(`https://tracuuhoadon.gdt.gov.vn/listdmcqt.html${cqt}`).then((r) => r.json().then((data) => data));
 };
 const getDanhSachTinhThanh = () => {
   return handleApiRequest(() => _axios.get(apiDanhSachTinhThanh));
