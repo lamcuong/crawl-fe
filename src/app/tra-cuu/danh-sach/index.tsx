@@ -447,7 +447,10 @@ const TraCuu: React.FC<RpaProps> = () => {
       }
       if (successCallback) successCallback(response);
       return response;
-    } catch (error) {}
+    } catch (error) {
+      setError(error.response?.data?.message)
+      throw error
+    }
   };
   const search = async () => {
     setIsLoading(true);
