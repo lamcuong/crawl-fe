@@ -486,8 +486,9 @@ const TraCuu: React.FC<RpaProps> = () => {
         }
       );
       // danhSachCongTyLienQuan
-      await crawlApi.getDanhSachCongTyLienQuan({taxCode:valueNNT.taxCode})
-
+      
+      const dataDanhSachCongTyLienQuan = await crawlApi.getDanhSachCongTyLienQuan({taxCode:valueNNT.taxCode})
+      setDataDanhSachCongTyLienQuan(dataDanhSachCongTyLienQuan.data)
       await getThongTinThue();
     } catch (error) {
       setIsLoading(false);
@@ -541,6 +542,7 @@ const TraCuu: React.FC<RpaProps> = () => {
     setValueNTT(initialValue);
     setSearchType(e.target.value);
   };
+  console.log(dataDanhSachCongTyLienQuan)
   return (
     <div className="flex gap-10 justify-center flex-col">
       <DetailDialog content={detailResult} dialogName={dialogName} visible={visible} setVisible={setVisible} />
