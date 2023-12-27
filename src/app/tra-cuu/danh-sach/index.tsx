@@ -459,7 +459,10 @@ const TraCuu: React.FC<RpaProps> = () => {
       if (response.code === 1008 || response.code === 1007) {
         toast.error(response.message);
       }
-      if (successCallback && response?.data?.length) successCallback(response);
+      if (successCallback && response?.data?.length) {
+        toast.success('Tra cứu thành công')
+        successCallback(response);
+      }
       return response;
     } catch (error) {
       toast.error(error.response?.data?.message);
@@ -555,6 +558,7 @@ const TraCuu: React.FC<RpaProps> = () => {
     }
   }, [error, isLoading, isSubmitted]);
   const handleSearchTypeChange = (e) => {
+    resetData()
     setValueNTT(initialValue);
     setSearchType(e.target.value);
   };
@@ -670,11 +674,12 @@ const TraCuu: React.FC<RpaProps> = () => {
 
             <TableComponent
               isSuccess={isSuccess}
-              retryFunc={async () => {
-                const dataDanhSachCongTyLienQuan = await crawlApi.getDanhSachCongTyLienQuan({
-                  taxCode: valueNNT.taxCode,
-                });
-                setDataDanhSachCongTyLienQuan(dataDanhSachCongTyLienQuan.data);
+              retryFunc={()=>{
+                handleRetryApi(()=>crawlApi.getDanhSachCongTyLienQuan({
+                  taxCode:valueNNT.taxCode
+                }),(danhSachCongTyLienQuan)=>{
+                  setDataDanhSachCongTyLienQuan(danhSachCongTyLienQuan.data)
+                })
               }}
               className="col-span-full "
               title="Danh sách Công ty liên quan của Người Liên Quan"
