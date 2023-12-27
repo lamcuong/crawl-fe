@@ -10,7 +10,6 @@ import { toast } from "react-toastify";
 type TaiSanProps = {};
 
 const TaiSan: React.FC<TaiSanProps> = () => {
-  const [files, setFiles] = useState([]);
   const initialValue = {
     taxCode: "",
     soKhung: "",
@@ -21,11 +20,14 @@ const TaiSan: React.FC<TaiSanProps> = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isShowDialog, setIsShowDialog] = useState(false);
   const [searchType, setSearchType] = useState("taxCode");
+  const [isLoadingRetry, setIsLoadingRetry] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false)
   const resetData = () => {
     setData([]);
   };
 
   const handleSubmit = async () => {
+    setIsSuccess(false)
     resetData();
     setIsLoading(true);
     try {
@@ -36,7 +38,8 @@ const TaiSan: React.FC<TaiSanProps> = () => {
       });
       setData(data.data.html);
       setIsLoading(false);
-      toast.success("Tra cứu thành công")
+      toast.success("Tra cứu thành công");
+      setIsSuccess(true)
     } catch (error) {
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
@@ -45,6 +48,25 @@ const TaiSan: React.FC<TaiSanProps> = () => {
       }
     }
     setIsLoading(false);
+  };
+  const handleRetrySubmit = async () => {
+    resetData();
+    setIsLoadingRetry(true);
+    try {
+      const data = await crawlApi.getTaiSan({
+        taxCode: value.taxCode || null,
+        soKhung: value.soKhung || null,
+        keyHighlight: value.keyHighlight || null,
+        retry: true,
+      });
+      setData(data.data.html);
+      setIsLoadingRetry(false);
+    } catch (error) {
+      if (error?.response?.status === 401) {
+        setIsShowDialog(true);
+      }
+    }
+    setIsLoadingRetry(false);
   };
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -129,6 +151,9 @@ const TaiSan: React.FC<TaiSanProps> = () => {
         type="button"
         label={isLoading ? "Đang tra cứu" : "Tra cứu"}
       ></Button>
+      {isSuccess && <div style={{ width: "75%", margin:'10px auto', padding: "0 10px" }}>
+        <Button type="button" loading={isLoadingRetry} onClick={handleRetrySubmit} label="Tra cứu lại" />
+      </div>}
       <div dangerouslySetInnerHTML={{ __html: data }} />
     </div>
   );

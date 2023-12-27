@@ -121,13 +121,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
     cqtTinh: { code: "", name: "" },
     cqtQuanLy: { code: "", name: "" },
   };
-  const defaultValueBHXH = {
-    tinhThanh: { code: "*", name: "" },
-    donVi: { code: "", name: "" },
-  };
   const [valueCQT, setValueCQT] = useState(defaultValueCQT);
-  const [valueBHXH, setValueBHXH] = useState(defaultValueBHXH);
-
   const [dataThongTinThue, setDataThongTinThue] = useState(dataThongTinThueDefault);
   const [detailResult, setDetailResult] = useState(null);
   const [dialogName, setDialogName] = useState("");
@@ -139,8 +133,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
   // const [cqtQuanLyOptions, setCqtQuanLyOptions] = useState([]);
   const [error, setError] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
-
-
+  const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
     if (error && isSubmitted && !isLoading) {
@@ -148,16 +141,18 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
     }
     if (isSubmitted && !isLoading && !error) {
       toast.success("Tra cứu thành công");
+      setIsSuccess(true);
     }
   }, [error, isLoading, isSubmitted]);
-  const getThongTinThue = async () => {
+  const getThongTinThue = async (handleFunction, retry?: boolean) => {
     const _dataThongTinThue = [...dataThongTinThue];
 
-    const cuongCheThue = await handleCallApi(() =>
+    const cuongCheThue = await handleFunction(() =>
       crawlApi.getCuongCheThue({
         taxCode,
         loaiThongBao: "hgtsd",
         toDate: moment().format("DD/MM/YYYY"),
+        ...(retry ? { retry: true } : {}),
       })
     );
     _dataThongTinThue[0].result = cuongCheThue.data?.taxsEnforceResult.length ? "Có" : "Không";
@@ -166,11 +161,12 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
     _dataThongTinThue[0].detailResult = cuongCheThue.data?.taxsEnforceResult;
 
     if (valueCQT?.cqtTinh?.code && valueCQT?.cqtTinh?.code !== "*") {
-      const ruiRoThue = await handleCallApi(() =>
+      const ruiRoThue = await handleFunction(() =>
         crawlApi.getRuiRoThue({
           taxCode,
           cqtTinh: valueCQT?.cqtTinh?.code,
           cqtQuanLy: valueCQT?.cqtQuanLy?.code,
+          ...(retry ? { retry: true } : {}),
         })
       );
       _dataThongTinThue[1].result = ruiRoThue.data?.length ? "Có" : "Không";
@@ -180,9 +176,10 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
       _dataThongTinThue[1].result = "N/A";
     }
 
-    const noBaoHiem = await handleCallApi(() =>
+    const noBaoHiem = await handleFunction(() =>
       crawlApi.getNoBaoHiem({
         taxCode,
+        ...(retry ? { retry: true } : {}),
       })
     );
 
@@ -211,6 +208,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
     setDataThongTinThue(dataThongTinThueDefault);
     setError(null);
     setIsSubmitted(false);
+    setIsSuccess(false);
   };
   const handleSubmit = async () => {
     if (!taxCode) {
@@ -222,49 +220,69 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
     resetData();
     setIsLoading(true);
     try {
-      await getThongTinThue();
+      await getThongTinThue(handleCallApi);
     } catch (error) {
       setIsLoading(false);
     }
     setIsSubmitted(true);
     setIsLoading(false);
   };
-  return (
-    <div className="flex gap-10 justify-center flex-col">
-      <DetailDialog content={detailResult} dialogName={dialogName} visible={visible} setVisible={setVisible} />
-      <DialogLogin isShowDialog={isShowDialog} setIsShowDialog={setIsShowDialog} />
+  const handleRetryApi = async (apiFunction, successCallback) => {
+    try {
+      const response = await apiFunction();
+      if (successCallback) successCallback(response);
+      return response;
+    } catch (error) {}
+  };
+  const handleRetrySubmit = async (retryFunction) => {
+    if (!taxCode) {
+      toast.error("Vui lòng nhập mã số thuế", {
+        autoClose: 500,
+      });
+      return;
+    }
+    try {
+      await retryFunction()
+      await getThongTinThue(handleRetryApi);
+    } catch (error) {}
+  }
+    return (
+      <div className="flex gap-10 justify-center flex-col">
+        <DetailDialog content={detailResult} dialogName={dialogName} visible={visible} setVisible={setVisible} />
+        <DialogLogin isShowDialog={isShowDialog} setIsShowDialog={setIsShowDialog} />
 
-      <div className="w-1/2 lg:w-2/5 flex flex-col mx-auto gap-2">
-        <CQT valueCQT={valueCQT} setValueCQT={setValueCQT} />
-        <InputText
-          className="p-2"
-          id="taxCode"
-          placeholder="Mã số thuế"
-          onChange={(e) => setTaxCode(e.target.value)}
-          type="text"
-          value={taxCode}
-          name="taxCode"
-        />
-        <Button
-          type="button"
-          className="!mt-3 w-auto !mx-auto"
-          loading={isLoading}
-          label={isLoading ? "Đang tra cứu" : "Tra cứu"}
-          onClick={handleSubmit}
-        />
+        <div className="w-1/2 lg:w-2/5 flex flex-col mx-auto gap-2">
+          <CQT valueCQT={valueCQT} setValueCQT={setValueCQT} />
+          <InputText
+            className="p-2"
+            id="taxCode"
+            placeholder="Mã số thuế"
+            onChange={(e) => setTaxCode(e.target.value)}
+            type="text"
+            value={taxCode}
+            name="taxCode"
+          />
+          <Button
+            type="button"
+            className="!mt-3 w-auto !mx-auto"
+            loading={isLoading}
+            label={isLoading ? "Đang tra cứu" : "Tra cứu"}
+            onClick={handleSubmit}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ">
+          <TableComponent
+            isSuccess={isSuccess}
+            retryFunc={() => handleRetrySubmit(() => getThongTinThue(handleRetryApi, true))}
+            pagination={false}
+            className="col-span-full"
+            title="Thông Tin Về Thuế & Nghĩa Vụ Khác"
+            columns={thongTinVeThue}
+            data={isSubmitted && !error ? dataThongTinThue : dataThongTinThueDefault}
+          />
+        </div>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ">
-        <TableComponent
-          pagination={false}
-          className="col-span-full"
-          title="Thông Tin Về Thuế & Nghĩa Vụ Khác"
-          columns={thongTinVeThue}
-          data={isSubmitted && !error ? dataThongTinThue : dataThongTinThueDefault}
-        />
-      </div>
-    </div>
-  );
-};
-
+    );
+  };
 export default ThueVaNghiaVuKhac;

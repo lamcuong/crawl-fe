@@ -22,6 +22,8 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
         const response = await crawlApi.getUploadPhatNguoi(input);
         setResult(response.data);
         setSelectedFile(null);
+        setIsSuccess(false);
+        
       } catch (error) {
         setSelectedFile(null);
         throw error;
@@ -35,11 +37,13 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState([]);
   const [visible, setVisible] = useState(false);
+  const [isLoadingRetry, setIsLoadingRetry] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const resetData = () => {
-    setResult([])
-  }
+    setResult([]);
+  };
   const handleSubmit = async () => {
-    resetData()
+    resetData();
     setIsLoading(true);
     try {
       const list = bienSo.replaceAll(/\s+/g, "").split(/[,;]/);
@@ -53,6 +57,8 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
             danhSachBien.push(...data.data);
           }
         }
+       setIsSuccess(true);
+
         setResult(danhSachBien);
       }
 
@@ -67,9 +73,33 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
     }
     setIsLoading(false);
   };
+  const handleRetrySubmit = async () => {
+    resetData();
+    setIsLoadingRetry(true);
+    try {
+      const list = bienSo.replaceAll(/\s+/g, "").split(/[,;]/);
+      const danhSachBien = [];
+      if (selectedFile) {
+        await handleUpload();
+      } else {
+        for (const plate of list) {
+          const data = await crawlApi.getPhatNguoi({ licenseNumber: plate, retry: true });
+          if (data.data.length) {
+            danhSachBien.push(...data.data);
+          }
+        }
+        setResult(danhSachBien);
+      }
+
+      setIsLoadingRetry(false);
+    } catch (error) {
+      console.log(error);
+    }
+    setIsLoadingRetry(false);
+  };
   const ref = useRef();
   return (
-    <div className="min-w-fit w-1/2 mx-auto ">
+    <div className="w-1/2 mx-auto ">
       <DialogLogin isShowDialog={isShowDialog} />
       <Dialog
         dismissableMask
@@ -140,49 +170,54 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
         className="!mt-3 w-auto !mx-auto !flex"
       ></Button>
       <div>
+        {isSuccess && (
+          <div>
+            <Button onClick={handleRetrySubmit} type="button" label="Tra cứu lại" loading={isLoadingRetry} />
+          </div>
+        )}
         {result.length
           ? result.map((item) => {
               return (
                 <div className="border-b border-black py-5">
-                  <div className="flex my-3  flex-wrap">
+                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
                     <div className="text-md font-[600] basis-1/3">Biển kiểm soát</div>
                     <div className="flex-1 text-md">{item.licenseNumber}</div>
                   </div>
-                  <div className="flex my-3  flex-wrap">
+                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
                     <div className="text-md font-[600] basis-1/3">Màu biển</div>
                     <div className="flex-1 text-md">{item.specs}</div>
                   </div>
-                  <div className="flex my-3  flex-wrap">
+                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
                     <div className="text-md font-[600] basis-1/3">Loại phương tiện</div>
                     <div className="flex-1 text-md">{item.vehicleType}</div>
                   </div>
-                  <div className="flex my-3  flex-wrap">
+                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
                     <div className="text-md font-[600] basis-1/3">Thời gian vi phạm</div>
                     <div className="flex-1 text-md">{item.violationTime}</div>
                   </div>
-                  <div className="flex my-3  flex-wrap">
+                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
                     <div className="text-md font-[600] basis-1/3">Địa điểm vi phạm</div>
                     <div className="flex-1 text-md">{item.violationAddress}</div>
                   </div>
-                  <div className="flex my-3  flex-wrap">
+                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
                     <div className="text-md font-[600] basis-1/3">Hành vi vi phạm</div>
                     <div className="flex-1 text-md">{item.behavior}</div>
                   </div>
-                  <div className="flex my-3  flex-wrap">
+                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
                     <div className="text-md font-[600] basis-1/3">Trạng thái</div>
                     <div className="flex-1 text-md ">
                       <span className="text-danger badge">{item.status}</span>
                     </div>
                   </div>
-                  <div className="flex my-3  flex-wrap">
+                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
                     <div className="text-md font-[600] basis-1/3">Đơn vị phát hiện vi phạm</div>
                     <div className="flex-1 text-md">{item.provider}</div>
                   </div>
 
-                  <div className="flex my-3  flex-wrap">
+                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
                     <div className="text-md font-[600]">Nơi giải quyết vụ việc</div>
                   </div>
-                  <div className="flex my-3 flex-wrap">
+                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
                     <div className="text-md whitespace-pre-wrap">{item.contactAddress}</div>
                   </div>
                 </div>

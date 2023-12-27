@@ -382,6 +382,7 @@ const TraCuu: React.FC<RpaProps> = () => {
   const [dataThayDoiGiayPhepDKKD, setDataThayDoiGiayPhepDKKD] = useState([]);
   const [dataThongTinThue, setDataThongTinThue] = useState(dataThongTinThueDefault);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [_ , setIsLoadingRetry] = useState(false);
   const handleChangeNNT = (name, newValue) => {
     setValueNTT({ ...valueNNT, [name]: newValue });
   };
@@ -392,9 +393,9 @@ const TraCuu: React.FC<RpaProps> = () => {
     setDataThayDoiGiayPhepDKKD([]);
     setDataThongTinThue(dataThongTinThueDefault);
     setError(null);
-    setIsSubmitted(false);
+    setIsSuccess(false);
   };
-  const getThongTinThue = async (handleFunction: () => Promise) => {
+  const getThongTinThue = async (handleFunction: () => Promise, retry?: boolean) => {
     const _dataThongTinThue = [...dataThongTinThueDefault];
 
     const cuongCheThue = await handleFunction(() =>
@@ -402,6 +403,7 @@ const TraCuu: React.FC<RpaProps> = () => {
         taxCode: valueNNT.taxCode,
         loaiThongBao: "hgtsd",
         toDate: moment().format("DD/MM/YYYY"),
+        ...(retry ? { retry: true } : {}),
       })
     );
     _dataThongTinThue[0].result = cuongCheThue.data?.taxsEnforceResult.length ? "Có" : "Không";
@@ -414,6 +416,7 @@ const TraCuu: React.FC<RpaProps> = () => {
           taxCode: valueNNT.taxCode,
           cqtTinh: valueCQT?.cqtTinh?.code,
           cqtQuanLy: valueCQT?.cqtQuanLy?.code,
+          ...(retry ? { retry: true } : {}),
         })
       );
       _dataThongTinThue[1].result = ruiRoThue.data?.length ? "Có" : "Không";
@@ -426,6 +429,7 @@ const TraCuu: React.FC<RpaProps> = () => {
     const noBaoHiem = await handleFunction(() =>
       crawlApi.getNoBaoHiem({
         taxCode: valueNNT.taxCode,
+        ...(retry ? { retry: true } : {}),
       })
     );
     const previousMonth = moment().month() - 1;
@@ -456,24 +460,16 @@ const TraCuu: React.FC<RpaProps> = () => {
   const handleRetryApi = async (apiFunction, successCallback) => {
     try {
       const response = await apiFunction();
-      if (response.code === 1008 || response.code === 1007) {
-        toast.error(response.message);
-      }
-      if (successCallback && response?.data?.length) {
-        toast.success('Tra cứu thành công')
-        successCallback(response);
-      }
+      if (successCallback) successCallback(response);
       return response;
-    } catch (error) {
-      toast.error(error.response?.data?.message);
-    }
+    } catch (error) {}
   };
 
-  const search = async () => {
-    setIsLoading(true);
+  const search = async (handleFunction, setLoading) => {
+    setLoading(true);
     try {
       // danhSachChiNhanh
-      await handleCallApi(
+      await handleFunction(
         () =>
           crawlApi.getDanhSachChiNhanh({
             taxCode: valueNNT.taxCode ? valueNNT.taxCode : null,
@@ -485,14 +481,14 @@ const TraCuu: React.FC<RpaProps> = () => {
         }
       );
       // thayDoiGiayPhepDKKD
-      await handleCallApi(
+      await handleFunction(
         () => crawlApi.getThayDoiDKKD({ taxCode: valueNNT.taxCode, loaiThongBao: "AMEND,CHANTC" }),
         (thayDoiGiayPhepDKKD) => {
           setDataThayDoiGiayPhepDKKD(thayDoiGiayPhepDKKD.data);
         }
       );
       // danhSachNguoiLienQuan
-      await handleCallApi(
+      await handleFunction(
         () =>
           crawlApi.getDanhSachNguoiLienQuan({
             taxCode: valueNNT.taxCode,
@@ -506,13 +502,44 @@ const TraCuu: React.FC<RpaProps> = () => {
 
       const dataDanhSachCongTyLienQuan = await crawlApi.getDanhSachCongTyLienQuan({ taxCode: valueNNT.taxCode });
       setDataDanhSachCongTyLienQuan(dataDanhSachCongTyLienQuan.data);
-      await getThongTinThue(handleCallApi);
+      await getThongTinThue(handleFunction);
     } catch (error) {
-      setIsLoading(false);
+      setLoading(false);
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
       }
     }
+  };
+  const handleRetrySubmit = async (retryFunction) => {
+    if (!valueNNT.taxCode && searchType === "taxCode") {
+      toast.error("Vui lòng nhập mã số thuế", {
+        autoClose: 500,
+      });
+      return;
+    } else if (!valueNNT.cardId && searchType === "cardId") {
+      toast.error("Vui lòng nhập CCCD/CMND/Passport", {
+        autoClose: 500,
+      });
+      return;
+    }
+    if (searchType === "taxCode") {
+      await retryFunction();
+      await search(handleRetryApi, setIsLoadingRetry);
+    } else {
+      setIsLoadingRetry(true);
+      await handleRetryApi(
+        () =>
+          crawlApi.getDanhSachChiNhanh({
+            taxCode: valueNNT.taxCode ? valueNNT.taxCode : null,
+            cardId: valueNNT.cardId ? valueNNT.cardId : null,
+          }),
+        (danhSachChiNhanh) => {
+          setDataDanhSachChiNhanh(danhSachChiNhanh.data);
+        }
+      );
+    }
+
+    setIsLoadingRetry(false);
   };
   const handleSubmit = async () => {
     if (!valueNNT.taxCode && searchType === "taxCode") {
@@ -528,7 +555,7 @@ const TraCuu: React.FC<RpaProps> = () => {
     }
     resetData();
     if (searchType === "taxCode") {
-      await search();
+      await search(handleCallApi, setIsLoading);
     } else {
       setIsLoading(true);
       await handleCallApi(
@@ -553,12 +580,10 @@ const TraCuu: React.FC<RpaProps> = () => {
     if (isSubmitted && !isLoading && !error) {
       toast.success("Tra cứu thành công");
       setIsSuccess(true);
-    }else {
-      setIsSuccess(false)
     }
   }, [error, isLoading, isSubmitted]);
   const handleSearchTypeChange = (e) => {
-    resetData()
+    resetData();
     setValueNTT(initialValue);
     setSearchType(e.target.value);
   };
@@ -624,7 +649,7 @@ const TraCuu: React.FC<RpaProps> = () => {
           className="!mt-3 w-auto !mx-auto"
           loading={isLoading}
           label={isLoading ? "Đang tra cứu" : "Tra cứu"}
-          onClick={handleSubmit}
+          onClick={() => handleSubmit(handleCallApi)}
         />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ">
@@ -632,7 +657,7 @@ const TraCuu: React.FC<RpaProps> = () => {
           <>
             <TableComponent
               isSuccess={isSuccess}
-              retryFunc={() => getThongTinThue(handleRetryApi)}
+              retryFunc={() => handleRetrySubmit(() => getThongTinThue(handleRetryApi, true))}
               pagination={false}
               className="col-span-full"
               title="Thông Tin Về Thuế & Nghĩa Vụ Khác"
@@ -642,11 +667,14 @@ const TraCuu: React.FC<RpaProps> = () => {
             <TableComponent
               isSuccess={isSuccess}
               retryFunc={() =>
-                handleRetryApi(
-                  () => crawlApi.getThayDoiDKKD({ taxCode: valueNNT.taxCode, loaiThongBao: "AMEND,CHANTC" }),
-                  (thayDoiGiayPhepDKKD) => {
-                    setDataThayDoiGiayPhepDKKD(thayDoiGiayPhepDKKD.data);
-                  }
+                handleRetrySubmit(() =>
+                  handleRetryApi(
+                    () =>
+                      crawlApi.getThayDoiDKKD({ taxCode: valueNNT.taxCode, loaiThongBao: "AMEND,CHANTC", retry: true }),
+                    (thayDoiGiayPhepDKKD) => {
+                      setDataThayDoiGiayPhepDKKD(thayDoiGiayPhepDKKD.data);
+                    }
+                  )
                 )
               }
               title="Thay đổi giấy phép ĐKKD"
@@ -656,15 +684,18 @@ const TraCuu: React.FC<RpaProps> = () => {
             <TableComponent
               isSuccess={isSuccess}
               retryFunc={() =>
-                handleRetryApi(
-                  () =>
-                    crawlApi.getDanhSachNguoiLienQuan({
-                      taxCode: valueNNT.taxCode,
-                      taxCodes: [],
-                    }),
-                  (danhSachNguoiLienQuan) => {
-                    setDataDanhSachNguoiLienQuan(danhSachNguoiLienQuan.data);
-                  }
+                handleRetrySubmit(() =>
+                  handleRetryApi(
+                    () =>
+                      crawlApi.getDanhSachNguoiLienQuan({
+                        taxCode: valueNNT.taxCode,
+                        taxCodes: [],
+                        retry: true,
+                      }),
+                    (danhSachNguoiLienQuan) => {
+                      setDataDanhSachNguoiLienQuan(danhSachNguoiLienQuan.data);
+                    }
+                  )
                 )
               }
               title="Danh sách người liên quan"
@@ -674,13 +705,20 @@ const TraCuu: React.FC<RpaProps> = () => {
 
             <TableComponent
               isSuccess={isSuccess}
-              retryFunc={()=>{
-                handleRetryApi(()=>crawlApi.getDanhSachCongTyLienQuan({
-                  taxCode:valueNNT.taxCode
-                }),(danhSachCongTyLienQuan)=>{
-                  setDataDanhSachCongTyLienQuan(danhSachCongTyLienQuan.data)
-                })
-              }}
+              retryFunc={() =>
+                handleRetrySubmit(() =>
+                  handleRetryApi(
+                    () =>
+                      crawlApi.getDanhSachCongTyLienQuan({
+                        taxCode: valueNNT.taxCode,
+                        retry: true,
+                      }),
+                    (danhSachCongTyLienQuan) => {
+                      setDataDanhSachCongTyLienQuan(danhSachCongTyLienQuan.data);
+                    }
+                  )
+                )
+              }
               className="col-span-full "
               title="Danh sách Công ty liên quan của Người Liên Quan"
               columns={danhSachCongTyLienQuan}
@@ -691,16 +729,19 @@ const TraCuu: React.FC<RpaProps> = () => {
         <TableComponent
           isSuccess={isSuccess}
           retryFunc={() =>
-            handleRetryApi(
-              () =>
-                crawlApi.getDanhSachChiNhanh({
-                  taxCode: valueNNT.taxCode ? valueNNT.taxCode : null,
-                  cardId: valueNNT.cardId ? valueNNT.cardId : null,
-                }),
+            handleRetrySubmit(() =>
+              handleRetryApi(
+                () =>
+                  crawlApi.getDanhSachChiNhanh({
+                    taxCode: valueNNT.taxCode ? valueNNT.taxCode : null,
+                    cardId: valueNNT.cardId ? valueNNT.cardId : null,
+                    retry: true,
+                  }),
 
-              (danhSachChiNhanh) => {
-                setDataDanhSachChiNhanh(danhSachChiNhanh.data);
-              }
+                (danhSachChiNhanh) => {
+                  setDataDanhSachChiNhanh(danhSachChiNhanh.data);
+                }
+              )
             )
           }
           className="col-span-full"
