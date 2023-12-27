@@ -381,7 +381,7 @@ const TraCuu: React.FC<RpaProps> = () => {
   const [dataDanhSachCongTyLienQuan, setDataDanhSachCongTyLienQuan] = useState([]);
   const [dataThayDoiGiayPhepDKKD, setDataThayDoiGiayPhepDKKD] = useState([]);
   const [dataThongTinThue, setDataThongTinThue] = useState(dataThongTinThueDefault);
-
+  const [isSuccess, setIsSuccess] = useState(false);
   const handleChangeNNT = (name, newValue) => {
     setValueNTT({ ...valueNNT, [name]: newValue });
   };
@@ -394,10 +394,10 @@ const TraCuu: React.FC<RpaProps> = () => {
     setError(null);
     setIsSubmitted(false);
   };
-  const getThongTinThue = async () => {
+  const getThongTinThue = async (handleFunction: () => Promise) => {
     const _dataThongTinThue = [...dataThongTinThueDefault];
 
-    const cuongCheThue = await handleCallApi(() =>
+    const cuongCheThue = await handleFunction(() =>
       crawlApi.getCuongCheThue({
         taxCode: valueNNT.taxCode,
         loaiThongBao: "hgtsd",
@@ -409,7 +409,7 @@ const TraCuu: React.FC<RpaProps> = () => {
       cuongCheThue.data?.taxsEnforceResult[cuongCheThue.data?.taxsEnforceResult?.length - 1]?.ngayThongBao || "";
     _dataThongTinThue[0].detailResult = cuongCheThue.data?.taxsEnforceResult;
     if (valueCQT?.cqtTinh?.code && valueCQT?.cqtTinh?.code !== "*") {
-      const ruiRoThue = await handleCallApi(() =>
+      const ruiRoThue = await handleFunction(() =>
         crawlApi.getRuiRoThue({
           taxCode: valueNNT.taxCode,
           cqtTinh: valueCQT?.cqtTinh?.code,
@@ -423,7 +423,7 @@ const TraCuu: React.FC<RpaProps> = () => {
       _dataThongTinThue[1].result = "N/A";
     }
 
-    const noBaoHiem = await handleCallApi(() =>
+    const noBaoHiem = await handleFunction(() =>
       crawlApi.getNoBaoHiem({
         taxCode: valueNNT.taxCode,
       })
@@ -448,10 +448,24 @@ const TraCuu: React.FC<RpaProps> = () => {
       if (successCallback) successCallback(response);
       return response;
     } catch (error) {
-      setError(error.response?.data?.message)
-      throw error
+      setError(error.response?.data?.message);
+      throw error;
     }
   };
+
+  const handleRetryApi = async (apiFunction, successCallback) => {
+    try {
+      const response = await apiFunction();
+      if (response.code === 1008 || response.code === 1007) {
+        toast.error(response.message);
+      }
+      if (successCallback && response?.data?.length) successCallback(response);
+      return response;
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+    }
+  };
+
   const search = async () => {
     setIsLoading(true);
     try {
@@ -486,10 +500,10 @@ const TraCuu: React.FC<RpaProps> = () => {
         }
       );
       // danhSachCongTyLienQuan
-      
-      const dataDanhSachCongTyLienQuan = await crawlApi.getDanhSachCongTyLienQuan({taxCode:valueNNT.taxCode})
-      setDataDanhSachCongTyLienQuan(dataDanhSachCongTyLienQuan.data)
-      await getThongTinThue();
+
+      const dataDanhSachCongTyLienQuan = await crawlApi.getDanhSachCongTyLienQuan({ taxCode: valueNNT.taxCode });
+      setDataDanhSachCongTyLienQuan(dataDanhSachCongTyLienQuan.data);
+      await getThongTinThue(handleCallApi);
     } catch (error) {
       setIsLoading(false);
       if (error?.response?.status === 401) {
@@ -535,14 +549,15 @@ const TraCuu: React.FC<RpaProps> = () => {
     }
     if (isSubmitted && !isLoading && !error) {
       toast.success("Tra cứu thành công");
+      setIsSuccess(true);
+    }else {
+      setIsSuccess(false)
     }
   }, [error, isLoading, isSubmitted]);
-
   const handleSearchTypeChange = (e) => {
     setValueNTT(initialValue);
     setSearchType(e.target.value);
   };
-  console.log(dataDanhSachCongTyLienQuan)
   return (
     <div className="flex gap-10 justify-center flex-col">
       <DetailDialog content={detailResult} dialogName={dialogName} visible={visible} setVisible={setVisible} />
@@ -612,6 +627,8 @@ const TraCuu: React.FC<RpaProps> = () => {
         {searchType === "taxCode" && (
           <>
             <TableComponent
+              isSuccess={isSuccess}
+              retryFunc={() => getThongTinThue(handleRetryApi)}
               pagination={false}
               className="col-span-full"
               title="Thông Tin Về Thuế & Nghĩa Vụ Khác"
@@ -619,17 +636,46 @@ const TraCuu: React.FC<RpaProps> = () => {
               data={isSubmitted && !error ? dataThongTinThue : dataThongTinThueDefault}
             />
             <TableComponent
+              isSuccess={isSuccess}
+              retryFunc={() =>
+                handleRetryApi(
+                  () => crawlApi.getThayDoiDKKD({ taxCode: valueNNT.taxCode, loaiThongBao: "AMEND,CHANTC" }),
+                  (thayDoiGiayPhepDKKD) => {
+                    setDataThayDoiGiayPhepDKKD(thayDoiGiayPhepDKKD.data);
+                  }
+                )
+              }
               title="Thay đổi giấy phép ĐKKD"
               columns={thayDoiGiayPhepDKKD}
               data={isSubmitted && !error ? dataThayDoiGiayPhepDKKD : null}
             />
             <TableComponent
+              isSuccess={isSuccess}
+              retryFunc={() =>
+                handleRetryApi(
+                  () =>
+                    crawlApi.getDanhSachNguoiLienQuan({
+                      taxCode: valueNNT.taxCode,
+                      taxCodes: [],
+                    }),
+                  (danhSachNguoiLienQuan) => {
+                    setDataDanhSachNguoiLienQuan(danhSachNguoiLienQuan.data);
+                  }
+                )
+              }
               title="Danh sách người liên quan"
               columns={danhSachNguoiLienQuan}
               data={isSubmitted && !error ? dataDanhSachNguoiLienQuan : null}
             />
 
             <TableComponent
+              isSuccess={isSuccess}
+              retryFunc={async () => {
+                const dataDanhSachCongTyLienQuan = await crawlApi.getDanhSachCongTyLienQuan({
+                  taxCode: valueNNT.taxCode,
+                });
+                setDataDanhSachCongTyLienQuan(dataDanhSachCongTyLienQuan.data);
+              }}
               className="col-span-full "
               title="Danh sách Công ty liên quan của Người Liên Quan"
               columns={danhSachCongTyLienQuan}
@@ -638,6 +684,20 @@ const TraCuu: React.FC<RpaProps> = () => {
           </>
         )}
         <TableComponent
+          isSuccess={isSuccess}
+          retryFunc={() =>
+            handleRetryApi(
+              () =>
+                crawlApi.getDanhSachChiNhanh({
+                  taxCode: valueNNT.taxCode ? valueNNT.taxCode : null,
+                  cardId: valueNNT.cardId ? valueNNT.cardId : null,
+                }),
+
+              (danhSachChiNhanh) => {
+                setDataDanhSachChiNhanh(danhSachChiNhanh.data);
+              }
+            )
+          }
           className="col-span-full"
           title="Danh sách chi nhánh"
           columns={danhSachChiNhanh}
