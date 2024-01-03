@@ -1,15 +1,15 @@
 //@ts-nocheck
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { DialogLogin } from "../components/LoginDialog";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import crawlApi from "../../../apis";
 import { toast } from "react-toastify";
 import { Dialog } from "primereact/dialog";
-
+import RetryDialog from "../components/RetryDialog";
 type PhatNguoiProps = {};
-
+type SearchType = "upload" | "manual";
 const PhatNguoi: React.FC<PhatNguoiProps> = () => {
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -21,15 +21,12 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
       try {
         const response = await crawlApi.getUploadPhatNguoi(input);
         setResult(response.data);
-        setSelectedFile(null);
-        setIsSuccess(false);
-        
+        setSelectedFile(null)
       } catch (error) {
-        setSelectedFile(null);
+        setSelectedFile(null)
         throw error;
       }
     }
-    ref.current?.clear();
   };
   const [isShowDialog, setIsShowDialog] = useState(false);
 
@@ -37,33 +34,42 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState([]);
   const [visible, setVisible] = useState(false);
-  const [isLoadingRetry, setIsLoadingRetry] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [searchType, setSearchType] = useState<SearchType>("manual");
   const resetData = () => {
     setResult([]);
+    setIsError(false);
   };
   const handleSubmit = async () => {
     resetData();
     setIsLoading(true);
     try {
+      let error = false;
       const list = bienSo.replaceAll(/\s+/g, "").split(/[,;]/);
       const danhSachBien = [];
       if (selectedFile) {
+        setSearchType("upload");
         await handleUpload();
       } else {
+        setSearchType("manual");
         for (const plate of list) {
           const data = await crawlApi.getPhatNguoi({ licenseNumber: plate });
+          if (data?.data[0]?.isError) {
+            error = true;
+          }
           if (data.data.length) {
             danhSachBien.push(...data.data);
           }
         }
-       setIsSuccess(true);
-
-        setResult(danhSachBien);
+        if(!error) setResult(danhSachBien);
       }
-
+      if (!error) {
+        toast.success("Tra cứu thành công");
+        setSelectedFile(null);
+      } else {
+        setIsError(true);
+      }
       setIsLoading(false);
-      toast.success("Tra cứu thành công");
     } catch (error) {
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
@@ -74,33 +80,22 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
     setIsLoading(false);
   };
   const handleRetrySubmit = async () => {
-    resetData();
-    setIsLoadingRetry(true);
     try {
       const list = bienSo.replaceAll(/\s+/g, "").split(/[,;]/);
       const danhSachBien = [];
-      if (selectedFile) {
-        await handleUpload();
-      } else {
-        for (const plate of list) {
-          const data = await crawlApi.getPhatNguoi({ licenseNumber: plate, retry: true });
-          if (data.data.length) {
-            danhSachBien.push(...data.data);
-          }
+      setSearchType("manual");
+      for (const plate of list) {
+        const data = await crawlApi.getPhatNguoi({ licenseNumber: plate, retry: true });
+        if (data.data.length) {
+          danhSachBien.push(...data.data);
         }
-        setResult(danhSachBien);
       }
-
-      setIsLoadingRetry(false);
-    } catch (error) {
-      console.log(error);
-    }
-    setIsLoadingRetry(false);
+    } catch (error) {}
   };
-  const ref = useRef();
   return (
     <div className="w-1/2 mx-auto ">
       <DialogLogin isShowDialog={isShowDialog} />
+      <RetryDialog isOpen={isError} retryFunction={handleRetrySubmit} />
       <Dialog
         dismissableMask
         header={"Thêm mới Import Excel"}
@@ -170,58 +165,57 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
         className="!mt-3 w-auto !mx-auto !flex"
       ></Button>
       <div>
-        {isSuccess && (
-          <div>
-            <Button onClick={handleRetrySubmit} type="button" label="Tra cứu lại" loading={isLoadingRetry} />
-          </div>
-        )}
         {result.length
           ? result.map((item) => {
-              return (
-                <div className="border-b border-black py-5">
-                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
-                    <div className="text-md font-[600] basis-1/3">Biển kiểm soát</div>
-                    <div className="flex-1 text-md">{item.licenseNumber}</div>
-                  </div>
-                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
-                    <div className="text-md font-[600] basis-1/3">Màu biển</div>
-                    <div className="flex-1 text-md">{item.specs}</div>
-                  </div>
-                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
-                    <div className="text-md font-[600] basis-1/3">Loại phương tiện</div>
-                    <div className="flex-1 text-md">{item.vehicleType}</div>
-                  </div>
-                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
-                    <div className="text-md font-[600] basis-1/3">Thời gian vi phạm</div>
-                    <div className="flex-1 text-md">{item.violationTime}</div>
-                  </div>
-                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
-                    <div className="text-md font-[600] basis-1/3">Địa điểm vi phạm</div>
-                    <div className="flex-1 text-md">{item.violationAddress}</div>
-                  </div>
-                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
-                    <div className="text-md font-[600] basis-1/3">Hành vi vi phạm</div>
-                    <div className="flex-1 text-md">{item.behavior}</div>
-                  </div>
-                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
-                    <div className="text-md font-[600] basis-1/3">Trạng thái</div>
-                    <div className="flex-1 text-md ">
-                      <span className="text-danger badge">{item.status}</span>
+              if (searchType === "manual" || item?.isError === false) {
+                return (
+                  <div className="border-b border-black py-5">
+                    <div className={`flex my-3  flex-wrap`}>
+                      <div className="text-md font-[600] basis-1/3">Biển kiểm soát</div>
+                      <div className="flex-1 text-md">{item.licenseNumber}</div>
+                    </div>
+                    <div className={`flex my-3  flex-wrap`}>
+                      <div className="text-md font-[600] basis-1/3">Màu biển</div>
+                      <div className="flex-1 text-md">{item.specs}</div>
+                    </div>
+                    <div className={`flex my-3  flex-wrap`}>
+                      <div className="text-md font-[600] basis-1/3">Loại phương tiện</div>
+                      <div className="flex-1 text-md">{item.vehicleType}</div>
+                    </div>
+                    <div className={`flex my-3  flex-wrap`}>
+                      <div className="text-md font-[600] basis-1/3">Thời gian vi phạm</div>
+                      <div className="flex-1 text-md">{item.violationTime}</div>
+                    </div>
+                    <div className={`flex my-3  flex-wrap`}>
+                      <div className="text-md font-[600] basis-1/3">Địa điểm vi phạm</div>
+                      <div className="flex-1 text-md">{item.violationAddress}</div>
+                    </div>
+                    <div className={`flex my-3  flex-wrap`}>
+                      <div className="text-md font-[600] basis-1/3">Hành vi vi phạm</div>
+                      <div className="flex-1 text-md">{item.behavior}</div>
+                    </div>
+                    <div className={`flex my-3  flex-wrap`}>
+                      <div className="text-md font-[600] basis-1/3">Trạng thái</div>
+                      <div className="flex-1 text-md ">
+                        <span className="text-danger badge">{item.status}</span>
+                      </div>
+                    </div>
+                    <div className={`flex my-3  flex-wrap`}>
+                      <div className="text-md font-[600] basis-1/3">Đơn vị phát hiện vi phạm</div>
+                      <div className="flex-1 text-md">{item.provider}</div>
+                    </div>
+
+                    <div className={`flex my-3  flex-wrap`}>
+                      <div className="text-md font-[600]">Nơi giải quyết vụ việc</div>
+                    </div>
+                    <div className={`flex my-3  flex-wrap`}>
+                      <div className="text-md whitespace-pre-wrap">{item.contactAddress}</div>
                     </div>
                   </div>
-                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
-                    <div className="text-md font-[600] basis-1/3">Đơn vị phát hiện vi phạm</div>
-                    <div className="flex-1 text-md">{item.provider}</div>
-                  </div>
-
-                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
-                    <div className="text-md font-[600]">Nơi giải quyết vụ việc</div>
-                  </div>
-                  <div className={`flex my-3  flex-wrap ${item?.isError && "text-red-600"}`}>
-                    <div className="text-md whitespace-pre-wrap">{item.contactAddress}</div>
-                  </div>
-                </div>
-              );
+                );
+              } else {
+                return null;
+              }
             })
           : null}
       </div>

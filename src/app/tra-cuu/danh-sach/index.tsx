@@ -9,11 +9,11 @@ import { DialogLogin } from "../components/LoginDialog";
 
 import crawlApi from "../../../apis";
 import moment from "moment";
-import { Link } from "react-router-dom";
 import { RadioButton } from "primereact/radiobutton";
 import DetailDialog from "../components/DetailDialog";
 import CQT from "../components/CqtSelect";
-import BHXH from "../components/BhxhSelect";
+import RetryDialog from "../components/RetryDialog";
+import { checkError } from "../../../utils";
 const thayDoiGiayPhepDKKD: ColumnsType<DataType> = [
   {
     title: "STT",
@@ -381,10 +381,11 @@ const TraCuu: React.FC<RpaProps> = () => {
   const [dataDanhSachCongTyLienQuan, setDataDanhSachCongTyLienQuan] = useState([]);
   const [dataThayDoiGiayPhepDKKD, setDataThayDoiGiayPhepDKKD] = useState([]);
   const [dataThongTinThue, setDataThongTinThue] = useState(dataThongTinThueDefault);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [_ , setIsLoadingRetry] = useState(false);
+  const [isError, setIsError] = useState(false)
+  const [isRetry, setIsRetry] = useState(false)
+  const isSuccess = isSubmitted && !isError & !error
   const handleChangeNNT = (name, newValue) => {
-    setValueNTT({ ...valueNNT, [name]: newValue });
+    setValueNTT({ ...valueNNT, [name]: newValue.trim() });
   };
   const resetData = () => {
     setDataDanhSachChiNhanh([]);
@@ -393,7 +394,8 @@ const TraCuu: React.FC<RpaProps> = () => {
     setDataThayDoiGiayPhepDKKD([]);
     setDataThongTinThue(dataThongTinThueDefault);
     setError(null);
-    setIsSuccess(false);
+    setIsError(false)
+    setIsRetry(false)
   };
   const getThongTinThue = async (handleFunction: () => Promise, retry?: boolean) => {
     const _dataThongTinThue = [...dataThongTinThueDefault];
@@ -406,6 +408,9 @@ const TraCuu: React.FC<RpaProps> = () => {
         ...(retry ? { retry: true } : {}),
       })
     );
+    if(cuongCheThue.data?.taxsEnforceResult?.length && !retry){
+      checkError(cuongCheThue.data.taxsEnforceResult,(isError)=>setIsError(isError))
+    }
     _dataThongTinThue[0].result = cuongCheThue.data?.taxsEnforceResult.length ? "Có" : "Không";
     _dataThongTinThue[0].time =
       cuongCheThue.data?.taxsEnforceResult[cuongCheThue.data?.taxsEnforceResult?.length - 1]?.ngayThongBao || "";
@@ -419,6 +424,9 @@ const TraCuu: React.FC<RpaProps> = () => {
           ...(retry ? { retry: true } : {}),
         })
       );
+      if(ruiRoThue?.data?.length && !retry){
+        checkError(ruiRoThue.data,(isError)=>setIsError(isError))
+      }
       _dataThongTinThue[1].result = ruiRoThue.data?.length ? "Có" : "Không";
       _dataThongTinThue[1].time = ruiRoThue.data?.[0]?.ngayQuyetDinh || "";
       _dataThongTinThue[1].detailResult = ruiRoThue.data;
@@ -449,6 +457,9 @@ const TraCuu: React.FC<RpaProps> = () => {
       if (response.code === 1008 || response.code === 1007) {
         setError(response.message);
       }
+      if(response.data?.length){
+        checkError(response.data,(isError)=>setIsError(isError))
+      }
       if (successCallback) successCallback(response);
       return response;
     } catch (error) {
@@ -456,7 +467,6 @@ const TraCuu: React.FC<RpaProps> = () => {
       throw error;
     }
   };
-
   const handleRetryApi = async (apiFunction, successCallback) => {
     try {
       const response = await apiFunction();
@@ -465,8 +475,8 @@ const TraCuu: React.FC<RpaProps> = () => {
     } catch (error) {}
   };
 
-  const search = async (handleFunction, setLoading) => {
-    setLoading(true);
+  const search = async (handleFunction, isRetry = false) => {
+    if(!isRetry) setIsLoading(true);
     try {
       // danhSachChiNhanh
       await handleFunction(
@@ -474,6 +484,7 @@ const TraCuu: React.FC<RpaProps> = () => {
           crawlApi.getDanhSachChiNhanh({
             taxCode: valueNNT.taxCode ? valueNNT.taxCode : null,
             cardId: valueNNT.cardId ? valueNNT.cardId : null,
+            retry: isRetry
           }),
 
         (danhSachChiNhanh) => {
@@ -482,7 +493,7 @@ const TraCuu: React.FC<RpaProps> = () => {
       );
       // thayDoiGiayPhepDKKD
       await handleFunction(
-        () => crawlApi.getThayDoiDKKD({ taxCode: valueNNT.taxCode, loaiThongBao: "AMEND,CHANTC" }),
+        () => crawlApi.getThayDoiDKKD({ taxCode: valueNNT.taxCode, loaiThongBao: "AMEND,CHANTC", retry: isRetry }),
         (thayDoiGiayPhepDKKD) => {
           setDataThayDoiGiayPhepDKKD(thayDoiGiayPhepDKKD.data);
         }
@@ -493,6 +504,7 @@ const TraCuu: React.FC<RpaProps> = () => {
           crawlApi.getDanhSachNguoiLienQuan({
             taxCode: valueNNT.taxCode,
             taxCodes: [],
+            retry: isRetry
           }),
         (danhSachNguoiLienQuan) => {
           setDataDanhSachNguoiLienQuan(danhSachNguoiLienQuan.data);
@@ -500,17 +512,23 @@ const TraCuu: React.FC<RpaProps> = () => {
       );
       // danhSachCongTyLienQuan
 
-      const dataDanhSachCongTyLienQuan = await crawlApi.getDanhSachCongTyLienQuan({ taxCode: valueNNT.taxCode });
+      const dataDanhSachCongTyLienQuan = await crawlApi.getDanhSachCongTyLienQuan({ taxCode: valueNNT.taxCode, retry: isRetry });
+      if(dataDanhSachCongTyLienQuan?.data?.length){
+        checkError(dataDanhSachCongTyLienQuan.data,(isError)=>setIsError(isError))
+      }
       setDataDanhSachCongTyLienQuan(dataDanhSachCongTyLienQuan.data);
-      await getThongTinThue(handleFunction);
+      await getThongTinThue(handleFunction, isRetry);
     } catch (error) {
-      setLoading(false);
+      setIsLoading(false);
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
       }
     }
+    setIsLoading(false)
   };
-  const handleRetrySubmit = async (retryFunction) => {
+  const handleRetrySubmit = async () => {
+    setIsRetry(true)
+
     if (!valueNNT.taxCode && searchType === "taxCode") {
       toast.error("Vui lòng nhập mã số thuế", {
         autoClose: 500,
@@ -523,10 +541,8 @@ const TraCuu: React.FC<RpaProps> = () => {
       return;
     }
     if (searchType === "taxCode") {
-      await retryFunction();
-      await search(handleRetryApi, setIsLoadingRetry);
+      await search(handleRetryApi, true);
     } else {
-      setIsLoadingRetry(true);
       await handleRetryApi(
         () =>
           crawlApi.getDanhSachChiNhanh({
@@ -538,8 +554,6 @@ const TraCuu: React.FC<RpaProps> = () => {
         }
       );
     }
-
-    setIsLoadingRetry(false);
   };
   const handleSubmit = async () => {
     if (!valueNNT.taxCode && searchType === "taxCode") {
@@ -555,7 +569,7 @@ const TraCuu: React.FC<RpaProps> = () => {
     }
     resetData();
     if (searchType === "taxCode") {
-      await search(handleCallApi, setIsLoading);
+      await search(handleCallApi);
     } else {
       setIsLoading(true);
       await handleCallApi(
@@ -574,14 +588,13 @@ const TraCuu: React.FC<RpaProps> = () => {
     setIsLoading(false);
   };
   useEffect(() => {
-    if (error && isSubmitted && !isLoading) {
+    if (error && isSubmitted && !isLoading && !isError) {
       toast.error(error);
     }
-    if (isSubmitted && !isLoading && !error) {
+    if (isSubmitted && !isLoading && !error && !isError && !isRetry) {
       toast.success("Tra cứu thành công");
-      setIsSuccess(true);
     }
-  }, [error, isLoading, isSubmitted]);
+  }, [error, isError, isLoading, isRetry, isSubmitted]);
   const handleSearchTypeChange = (e) => {
     resetData();
     setValueNTT(initialValue);
@@ -591,6 +604,7 @@ const TraCuu: React.FC<RpaProps> = () => {
     <div className="flex gap-10 justify-center flex-col">
       <DetailDialog content={detailResult} dialogName={dialogName} visible={visible} setVisible={setVisible} />
       <DialogLogin isShowDialog={isShowDialog} setIsShowDialog={setIsShowDialog} />
+      <RetryDialog isOpen={isSubmitted && isError} retryFunction={handleRetrySubmit} />
       <div className="flex align-items-center justify-center gap-5">
         <div>
           <RadioButton
@@ -656,98 +670,36 @@ const TraCuu: React.FC<RpaProps> = () => {
         {searchType === "taxCode" && (
           <>
             <TableComponent
-              isSuccess={isSuccess}
-              retryFunc={() => handleRetrySubmit(() => getThongTinThue(handleRetryApi, true))}
               pagination={false}
               className="col-span-full"
               title="Thông Tin Về Thuế & Nghĩa Vụ Khác"
               columns={thongTinVeThue}
-              data={isSubmitted && !error ? dataThongTinThue : dataThongTinThueDefault}
+              data={isSuccess ? dataThongTinThue : dataThongTinThueDefault}
             />
             <TableComponent
-              isSuccess={isSuccess}
-              retryFunc={() =>
-                handleRetrySubmit(() =>
-                  handleRetryApi(
-                    () =>
-                      crawlApi.getThayDoiDKKD({ taxCode: valueNNT.taxCode, loaiThongBao: "AMEND,CHANTC", retry: true }),
-                    (thayDoiGiayPhepDKKD) => {
-                      setDataThayDoiGiayPhepDKKD(thayDoiGiayPhepDKKD.data);
-                    }
-                  )
-                )
-              }
               title="Thay đổi giấy phép ĐKKD"
               columns={thayDoiGiayPhepDKKD}
-              data={isSubmitted && !error ? dataThayDoiGiayPhepDKKD : null}
+              data={isSuccess ? dataThayDoiGiayPhepDKKD : null}
             />
             <TableComponent
-              isSuccess={isSuccess}
-              retryFunc={() =>
-                handleRetrySubmit(() =>
-                  handleRetryApi(
-                    () =>
-                      crawlApi.getDanhSachNguoiLienQuan({
-                        taxCode: valueNNT.taxCode,
-                        taxCodes: [],
-                        retry: true,
-                      }),
-                    (danhSachNguoiLienQuan) => {
-                      setDataDanhSachNguoiLienQuan(danhSachNguoiLienQuan.data);
-                    }
-                  )
-                )
-              }
               title="Danh sách người liên quan"
               columns={danhSachNguoiLienQuan}
-              data={isSubmitted && !error ? dataDanhSachNguoiLienQuan : null}
+              data={isSuccess ? dataDanhSachNguoiLienQuan : null}
             />
 
             <TableComponent
-              isSuccess={isSuccess}
-              retryFunc={() =>
-                handleRetrySubmit(() =>
-                  handleRetryApi(
-                    () =>
-                      crawlApi.getDanhSachCongTyLienQuan({
-                        taxCode: valueNNT.taxCode,
-                        retry: true,
-                      }),
-                    (danhSachCongTyLienQuan) => {
-                      setDataDanhSachCongTyLienQuan(danhSachCongTyLienQuan.data);
-                    }
-                  )
-                )
-              }
               className="col-span-full "
               title="Danh sách Công ty liên quan của Người Liên Quan"
               columns={danhSachCongTyLienQuan}
-              data={isSubmitted && !error ? dataDanhSachCongTyLienQuan : null}
+              data={isSuccess ? dataDanhSachCongTyLienQuan : null}
             />
           </>
         )}
         <TableComponent
-          isSuccess={isSuccess}
-          retryFunc={() =>
-            handleRetrySubmit(() =>
-              handleRetryApi(
-                () =>
-                  crawlApi.getDanhSachChiNhanh({
-                    taxCode: valueNNT.taxCode ? valueNNT.taxCode : null,
-                    cardId: valueNNT.cardId ? valueNNT.cardId : null,
-                    retry: true,
-                  }),
-
-                (danhSachChiNhanh) => {
-                  setDataDanhSachChiNhanh(danhSachChiNhanh.data);
-                }
-              )
-            )
-          }
           className="col-span-full"
           title="Danh sách chi nhánh"
           columns={danhSachChiNhanh}
-          data={isSubmitted && !error ? dataDanhSachChiNhanh : null}
+          data={isSuccess ? dataDanhSachChiNhanh : null}
         />
       </div>
     </div>

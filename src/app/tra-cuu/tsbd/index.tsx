@@ -7,6 +7,7 @@ import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import crawlApi from "../../../apis";
 import { toast } from "react-toastify";
+import RetryDialog from "../components/RetryDialog";
 type TaiSanProps = {};
 
 const TaiSan: React.FC<TaiSanProps> = () => {
@@ -20,14 +21,13 @@ const TaiSan: React.FC<TaiSanProps> = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isShowDialog, setIsShowDialog] = useState(false);
   const [searchType, setSearchType] = useState("taxCode");
-  const [isLoadingRetry, setIsLoadingRetry] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false)
+  const [isError, setIsError] = useState(false)
   const resetData = () => {
     setData([]);
+    setIsError(false)
   };
 
   const handleSubmit = async () => {
-    setIsSuccess(false)
     resetData();
     setIsLoading(true);
     try {
@@ -36,10 +36,14 @@ const TaiSan: React.FC<TaiSanProps> = () => {
         soKhung: value.soKhung || null,
         keyHighlight: value.keyHighlight || null,
       });
-      setData(data.data.html);
-      setIsLoading(false);
-      toast.success("Tra cứu thành công");
-      setIsSuccess(true)
+      if(data.data?.isError){
+        setIsError(true)
+      }else {
+        setData(data.data.html);
+        setIsLoading(false);
+        toast.success("Tra cứu thành công");
+      }
+     
     } catch (error) {
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
@@ -50,23 +54,19 @@ const TaiSan: React.FC<TaiSanProps> = () => {
     setIsLoading(false);
   };
   const handleRetrySubmit = async () => {
-    resetData();
-    setIsLoadingRetry(true);
     try {
-      const data = await crawlApi.getTaiSan({
+      await crawlApi.getTaiSan({
         taxCode: value.taxCode || null,
         soKhung: value.soKhung || null,
         keyHighlight: value.keyHighlight || null,
         retry: true,
       });
-      setData(data.data.html);
-      setIsLoadingRetry(false);
+      // setData(data.data.html);
     } catch (error) {
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
       }
     }
-    setIsLoadingRetry(false);
   };
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -82,6 +82,7 @@ const TaiSan: React.FC<TaiSanProps> = () => {
   return (
     <div className="mx-auto flex flex-col">
       <DialogLogin isShowDialog={isShowDialog} />
+      <RetryDialog isOpen={isError} retryFunction={handleRetrySubmit} />
       <div className="flex align-items-center justify-center gap-5">
         <div>
           <RadioButton
@@ -151,9 +152,6 @@ const TaiSan: React.FC<TaiSanProps> = () => {
         type="button"
         label={isLoading ? "Đang tra cứu" : "Tra cứu"}
       ></Button>
-      {isSuccess && <div style={{ width: "75%", margin:'10px auto', padding: "0 10px" }}>
-        <Button type="button" loading={isLoadingRetry} onClick={handleRetrySubmit} label="Tra cứu lại" />
-      </div>}
       <div dangerouslySetInnerHTML={{ __html: data }} />
     </div>
   );

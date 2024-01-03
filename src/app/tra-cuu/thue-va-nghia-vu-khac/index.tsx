@@ -11,6 +11,9 @@ import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import BHXH from "../components/BhxhSelect";
 import CQT from "../components/CqtSelect";
+import { checkError } from "../../../utils";
+import RetryDialog from "../components/RetryDialog";
+
 
 type ThueVaNghiaVuKhacProps = {};
 
@@ -129,21 +132,19 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
   const [visible, setVisible] = useState(false);
   const [isShowDialog, setIsShowDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  // const [cqtTinhOptions, setCqtTinhOptions] = useState([]);
-  // const [cqtQuanLyOptions, setCqtQuanLyOptions] = useState([]);
   const [error, setError] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const isSuccess = isSubmitted && !isError & !error
 
   useEffect(() => {
-    if (error && isSubmitted && !isLoading) {
+    if (error && isSubmitted && !isLoading && !isError) {
       toast.error(error);
     }
-    if (isSubmitted && !isLoading && !error) {
+    if (isSubmitted && !isLoading && !error && !isError) {
       toast.success("Tra cứu thành công");
-      setIsSuccess(true);
     }
-  }, [error, isLoading, isSubmitted]);
+  }, [error, isError, isLoading, isSubmitted]);
   const getThongTinThue = async (handleFunction, retry?: boolean) => {
     const _dataThongTinThue = [...dataThongTinThue];
 
@@ -155,6 +156,9 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
         ...(retry ? { retry: true } : {}),
       })
     );
+    if (cuongCheThue.data?.taxsEnforceResult?.length && !retry) {
+      checkError(cuongCheThue.data.taxsEnforceResult, (isError) => setIsError(isError));
+    }
     _dataThongTinThue[0].result = cuongCheThue.data?.taxsEnforceResult.length ? "Có" : "Không";
     _dataThongTinThue[0].time =
       cuongCheThue.data?.taxsEnforceResult[cuongCheThue.data?.taxsEnforceResult?.length - 1]?.ngayThongBao || "";
@@ -169,6 +173,9 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
           ...(retry ? { retry: true } : {}),
         })
       );
+      if (ruiRoThue?.data?.length && !retry) {
+        checkError(ruiRoThue.data, (isError) => setIsError(isError));
+      }
       _dataThongTinThue[1].result = ruiRoThue.data?.length ? "Có" : "Không";
       _dataThongTinThue[1].time = ruiRoThue.data?.[0]?.ngayQuyetDinh || "";
       _dataThongTinThue[1].detailResult = ruiRoThue.data;
@@ -208,7 +215,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
     setDataThongTinThue(dataThongTinThueDefault);
     setError(null);
     setIsSubmitted(false);
-    setIsSuccess(false);
+    setIsError(false)
   };
   const handleSubmit = async () => {
     if (!taxCode) {
@@ -234,7 +241,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
       return response;
     } catch (error) {}
   };
-  const handleRetrySubmit = async (retryFunction) => {
+  const handleRetrySubmit = async () => {
     if (!taxCode) {
       toast.error("Vui lòng nhập mã số thuế", {
         autoClose: 500,
@@ -242,47 +249,44 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
       return;
     }
     try {
-      await retryFunction()
-      await getThongTinThue(handleRetryApi);
+      await getThongTinThue(handleRetryApi, true);
     } catch (error) {}
-  }
-    return (
-      <div className="flex gap-10 justify-center flex-col">
-        <DetailDialog content={detailResult} dialogName={dialogName} visible={visible} setVisible={setVisible} />
-        <DialogLogin isShowDialog={isShowDialog} setIsShowDialog={setIsShowDialog} />
-
-        <div className="w-1/2 lg:w-2/5 flex flex-col mx-auto gap-2">
-          <CQT valueCQT={valueCQT} setValueCQT={setValueCQT} />
-          <InputText
-            className="p-2"
-            id="taxCode"
-            placeholder="Mã số thuế"
-            onChange={(e) => setTaxCode(e.target.value)}
-            type="text"
-            value={taxCode}
-            name="taxCode"
-          />
-          <Button
-            type="button"
-            className="!mt-3 w-auto !mx-auto"
-            loading={isLoading}
-            label={isLoading ? "Đang tra cứu" : "Tra cứu"}
-            onClick={handleSubmit}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ">
-          <TableComponent
-            isSuccess={isSuccess}
-            retryFunc={() => handleRetrySubmit(() => getThongTinThue(handleRetryApi, true))}
-            pagination={false}
-            className="col-span-full"
-            title="Thông Tin Về Thuế & Nghĩa Vụ Khác"
-            columns={thongTinVeThue}
-            data={isSubmitted && !error ? dataThongTinThue : dataThongTinThueDefault}
-          />
-        </div>
-      </div>
-    );
   };
+  return (
+    <div className="flex gap-10 justify-center flex-col">
+      <DetailDialog content={detailResult} dialogName={dialogName} visible={visible} setVisible={setVisible} />
+      <DialogLogin isShowDialog={isShowDialog} setIsShowDialog={setIsShowDialog} />
+      <RetryDialog isOpen={isError} retryFunction={handleRetrySubmit} />
+      <div className="w-1/2 lg:w-2/5 flex flex-col mx-auto gap-2">
+        <CQT valueCQT={valueCQT} setValueCQT={setValueCQT} />
+        <InputText
+          className="p-2"
+          id="taxCode"
+          placeholder="Mã số thuế"
+          onChange={(e) => setTaxCode(e.target.value)}
+          type="text"
+          value={taxCode}
+          name="taxCode"
+        />
+        <Button
+          type="button"
+          className="!mt-3 w-auto !mx-auto"
+          loading={isLoading}
+          label={isLoading ? "Đang tra cứu" : "Tra cứu"}
+          onClick={handleSubmit}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ">
+        <TableComponent
+          pagination={false}
+          className="col-span-full"
+          title="Thông Tin Về Thuế & Nghĩa Vụ Khác"
+          columns={thongTinVeThue}
+          data={isSuccess ? dataThongTinThue : dataThongTinThueDefault}
+        />
+      </div>
+    </div>
+  );
+};
 export default ThueVaNghiaVuKhac;
