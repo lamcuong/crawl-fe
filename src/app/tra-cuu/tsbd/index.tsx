@@ -22,6 +22,9 @@ const TaiSan: React.FC<TaiSanProps> = () => {
   const [isShowDialog, setIsShowDialog] = useState(false);
   const [searchType, setSearchType] = useState("taxCode");
   const [isError, setIsError] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isRetryLoading, setIsRetryLoading] = useState(false)
+  const isSuccess = isSubmitted && !isLoading && data.length
   const resetData = () => {
     setData([]);
     setIsError(false)
@@ -43,17 +46,19 @@ const TaiSan: React.FC<TaiSanProps> = () => {
         setIsLoading(false);
         toast.success("Tra cứu thành công");
       }
-     
+      
     } catch (error) {
       if (error?.response?.status === 401) {
         setIsShowDialog(true);
       } else {
-        toast.error(error || `Lỗi hệ thống, Vui lòng thử lại`);
+        toast.error(error?.response?.data?.message || error || `Lỗi hệ thống, Vui lòng thử lại`);
       }
     }
     setIsLoading(false);
+    setIsSubmitted(true)
   };
   const handleRetrySubmit = async () => {
+    setIsRetryLoading(true)
     try {
       await crawlApi.getTaiSan({
         taxCode: value.taxCode || null,
@@ -67,6 +72,7 @@ const TaiSan: React.FC<TaiSanProps> = () => {
         setIsShowDialog(true);
       }
     }
+    setIsRetryLoading(false)
   };
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -145,13 +151,22 @@ const TaiSan: React.FC<TaiSanProps> = () => {
           />
         </div>
       </div>
-      <Button
-        loading={isLoading}
-        onClick={handleSubmit}
-        className="block !mt-4 !mx-auto"
-        type="button"
-        label={isLoading ? "Đang tra cứu" : "Tra cứu"}
-      ></Button>
+      <div className="w-full flex justify-center gap-5">
+        <Button
+          type="button"
+          className="!mt-3 w-auto "
+          loading={isLoading}
+          label={isLoading ? "Đang tra cứu" : "Tra cứu"}
+          onClick={handleSubmit}
+          />
+        {isSuccess ? <Button
+          type="button"
+          className="!mt-3 w-auto "
+          loading={isRetryLoading}
+          label={isRetryLoading ? "Đang tra cứu" : "Tra cứu lại"}
+          onClick={handleRetrySubmit}
+        /> : null}
+      </div>
       <div dangerouslySetInnerHTML={{ __html: data }} />
     </div>
   );

@@ -135,6 +135,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
   const [error, setError] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [isRetryLoading, setIsRetryLoading] = useState(false)
   const isSuccess = isSubmitted && !isError & !error
 
   useEffect(() => {
@@ -208,7 +209,9 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
       if (successCallback) successCallback(response);
       return response;
     } catch (error) {
-      toast.error(error as ToastContent);
+      const err = error?.response?.data?.message as ToastContent || "Lỗi hệ thống, Vui lòng thử lại"
+      setError(err)
+      toast.error(err as ToastContent || "Lỗi hệ thống, Vui lòng thử lại");
     }
   };
   const resetData = () => {
@@ -248,9 +251,11 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
       });
       return;
     }
+    setIsRetryLoading(true)
     try {
       await getThongTinThue(handleRetryApi, true);
     } catch (error) {}
+    setIsRetryLoading(false)
   };
   return (
     <div className="flex gap-10 justify-center flex-col">
@@ -268,13 +273,22 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
           value={taxCode}
           name="taxCode"
         />
+        <div className="w-full flex justify-center gap-5">
         <Button
           type="button"
-          className="!mt-3 w-auto !mx-auto"
+          className="!mt-3 w-auto "
           loading={isLoading}
           label={isLoading ? "Đang tra cứu" : "Tra cứu"}
           onClick={handleSubmit}
-        />
+          />
+        {isSuccess ? <Button
+          type="button"
+          className="!mt-3 w-auto "
+          loading={isRetryLoading}
+          label={isRetryLoading ? "Đang tra cứu" : "Tra cứu lại"}
+          onClick={handleRetrySubmit}
+        /> : null}
+      </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ">

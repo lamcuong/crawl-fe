@@ -383,7 +383,9 @@ const TraCuu: React.FC<RpaProps> = () => {
   const [dataThongTinThue, setDataThongTinThue] = useState(dataThongTinThueDefault);
   const [isError, setIsError] = useState(false)
   const [isRetry, setIsRetry] = useState(false)
-  const isSuccess = isSubmitted && !isError & !error
+  const[isRetryLoading, setIsRetryLoading] = useState(false)
+  const isSuccess = isSubmitted && !isError && !error && !isLoading
+
   const handleChangeNNT = (name, newValue) => {
     setValueNTT({ ...valueNNT, [name]: newValue.trim() });
   };
@@ -525,10 +527,11 @@ const TraCuu: React.FC<RpaProps> = () => {
       }
     }
     setIsLoading(false)
+    setIsRetryLoading(false)
   };
   const handleRetrySubmit = async () => {
     setIsRetry(true)
-
+    setIsRetryLoading(true)
     if (!valueNNT.taxCode && searchType === "taxCode") {
       toast.error("Vui lòng nhập mã số thuế", {
         autoClose: 500,
@@ -658,13 +661,22 @@ const TraCuu: React.FC<RpaProps> = () => {
           />
         )}
 
+       <div className="w-full flex justify-center gap-5">
         <Button
           type="button"
-          className="!mt-3 w-auto !mx-auto"
+          className="!mt-3 w-auto "
           loading={isLoading}
           label={isLoading ? "Đang tra cứu" : "Tra cứu"}
           onClick={() => handleSubmit(handleCallApi)}
-        />
+          />
+        {isSuccess ? <Button
+          type="button"
+          className="!mt-3 w-auto "
+          label={isRetryLoading ? "Đang tra cứu" : "Tra cứu lại"}
+          loading={isRetryLoading}
+          onClick={handleRetrySubmit}
+        /> : null}
+       </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ">
         {searchType === "taxCode" && (

@@ -36,6 +36,9 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
   const [visible, setVisible] = useState(false);
   const [isError, setIsError] = useState(false);
   const [searchType, setSearchType] = useState<SearchType>("manual");
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isRetryLoading, setIsRetryLoading] = useState(false)
+  const isSuccess = !isError && isSubmitted && !isLoading && result.length
   const resetData = () => {
     setResult([]);
     setIsError(false);
@@ -78,8 +81,10 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
       }
     }
     setIsLoading(false);
+    setIsSubmitted(true)
   };
   const handleRetrySubmit = async () => {
+    setIsRetryLoading(true)
     try {
       const list = bienSo.replaceAll(/\s+/g, "").split(/[,;]/);
       const danhSachBien = [];
@@ -91,6 +96,7 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
         }
       }
     } catch (error) {}
+    setIsRetryLoading(false)
   };
   return (
     <div className="w-1/2 mx-auto ">
@@ -157,13 +163,22 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
           <p className="text-red-500"> Không cần nhập các kí tự đặc biệt như . - </p>
         </div>
       </div>
-      <Button
-        label={isLoading ? "Đang tra cứu" : "Tra cứu"}
-        loading={isLoading}
-        type="button"
-        onClick={handleSubmit}
-        className="!mt-3 w-auto !mx-auto !flex"
-      ></Button>
+      <div className="w-full flex justify-center gap-5">
+        <Button
+          type="button"
+          className="!mt-3 w-auto "
+          loading={isLoading}
+          label={isLoading ? "Đang tra cứu" : "Tra cứu"}
+          onClick={handleSubmit}
+          />
+        {isSuccess && searchType === 'manual' ? <Button
+          type="button"
+          className="!mt-3 w-auto "
+          loading={isRetryLoading}
+          label={isRetryLoading ? "Đang tra cứu" : "Tra cứu lại"}
+          onClick={handleRetrySubmit}
+        /> : null}
+       </div>
       <div>
         {result.length
           ? result.map((item) => {
