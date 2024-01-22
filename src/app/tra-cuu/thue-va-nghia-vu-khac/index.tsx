@@ -256,6 +256,7 @@ const ThueVaNghiaVuKhac: React.FC<ThueVaNghiaVuKhacProps> = () => {
       await getThongTinThue(handleRetryApi, true);
     } catch (error) {}
     setIsRetryLoading(false)
+    resetData()
   };
   return (
     <div className="flex gap-10 justify-center flex-col">

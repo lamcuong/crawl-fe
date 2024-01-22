@@ -397,10 +397,10 @@ const TraCuu: React.FC<RpaProps> = () => {
     setDataThongTinThue(dataThongTinThueDefault);
     setError(null);
     setIsError(false)
-    setIsRetry(false)
+    setIsSubmitted(false)
   };
   const getThongTinThue = async (handleFunction: () => Promise, retry?: boolean) => {
-    const _dataThongTinThue = [...dataThongTinThueDefault];
+    const _dataThongTinThue = [...dataThongTinThue];
 
     const cuongCheThue = await handleFunction(() =>
       crawlApi.getCuongCheThue({
@@ -557,6 +557,7 @@ const TraCuu: React.FC<RpaProps> = () => {
         }
       );
     }
+    resetData()
   };
   const handleSubmit = async () => {
     if (!valueNNT.taxCode && searchType === "taxCode") {

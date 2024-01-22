@@ -96,6 +96,7 @@ const PhatNguoi: React.FC<PhatNguoiProps> = () => {
         }
       }
     } catch (error) {}
+    resetData()
     setIsRetryLoading(false)
   };
   return (

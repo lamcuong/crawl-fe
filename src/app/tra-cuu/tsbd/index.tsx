@@ -73,6 +73,7 @@ const TaiSan: React.FC<TaiSanProps> = () => {
       }
     }
     setIsRetryLoading(false)
+    resetData()
   };
   const handleChange = (e) => {
     const { name, value } = e.target;
